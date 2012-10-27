@@ -43,7 +43,7 @@ $event->taxonomy = array(
         'slug' => 'events-tags'
         ),
     array(
-        'name' => 'attendees',
+        'name' => 'Attendees',
         'post_type' => $tmp_cpt
         )
 );

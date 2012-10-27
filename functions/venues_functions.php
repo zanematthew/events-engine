@@ -300,6 +300,8 @@ Class Venues extends zMCustomPostTypeBase {
     public function getCity( $track_id=null ){
 
         global $post;
+global $post_type;
+// var_dump( $post_type );
 
         if ( is_null( $track_id ) && $post->post_type == 'events' ){
             $track_id = Events::getTrackId( $post->ID );

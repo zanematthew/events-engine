@@ -46,6 +46,7 @@ class Events extends zMCustomPostTypeBase {
         // add_action( 'admin_menu', array( &$this, 'adminMenu' ) );
         add_action( 'wp_ajax_nopriv_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
         add_action( 'wp_ajax_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
+
     }
 
     public function adminJsCss(){
@@ -343,43 +344,6 @@ class Events extends zMCustomPostTypeBase {
 
         // do_action('date_save', $post_id);
         $this->updateVenue( $post_id, $_POST['venues_id'] );
-
-        // if ( isset( $_FILES['events_image'] ) ){
-        //     require_once LIB_ROOT_DIR . 'zm-upload/MediaUpload.php';
-        //     $media = new MediaUPload;
-        //     $uploaded_media = $media->saveUpload( 'events_image' );
-        //     $this->updateAttachmentId( $post_id, $uploaded_media['attachment_id'] );
-
-        //     // Start lame fix for WP
-        //     /**
-        //      * @todo MediaUpload does NOT handle resizing of images,
-        //      * normally its done in WordPress, but for some reason
-        //      * wp_generate_attachment_metadata() does not work when
-        //      * used in a plugin.
-        //      */
-        //     $thumb  = $media->resizeImage( $uploaded_media['file'], 'thumb' );
-        //     $square = $media->resizeImage( $uploaded_media['file'], 'square' );
-        //     $main   = $media->resizeImage( $uploaded_media['file'], 'main' );
-
-        //     if ( $uploaded_media['file_info']['extension'] == 'jpeg' ) {
-        //         $uploaded_media['file_info']['extension'] = 'jpg';
-        //     }
-
-        //     // Since we are updating the image meta we need to pull ALL
-        //     // of it to update ONE section of it.
-        //     $image_meta = wp_read_image_metadata( $uploaded_media['file'] );
-        //     $meta['image_meta'] = $image_meta;
-        //     $meta["zm_sizes"] = array(
-        //         'thumb'  => $media->upload_dir['subdir'] . '/' . $uploaded_media['file_info']['filename'] . '-zm-thumb.' . $uploaded_media['file_info']['extension'],
-        //         'square' => $media->upload_dir['subdir'] . '/' . $uploaded_media['file_info']['filename'] . '-zm-square.' . $uploaded_media['file_info']['extension'],
-        //         'main'   => $media->upload_dir['subdir'] . '/' . $uploaded_media['file_info']['filename'] . '-zm-main.' . $uploaded_media['file_info']['extension'],
-        //     );
-        //     wp_update_attachment_metadata( $uploaded_media['attachment_id'], $meta );
-
-        //     $stuff['attachment_id'] = $uploaded_media['attachment_id'];
-        //     $stuff['meta'] = wp_get_attachment_metadata( $uploaded_media['attachment_id'] );
-            // End lame fix for WP
-        // }
     }
 
     public function locationMetaField(){
@@ -388,29 +352,11 @@ class Events extends zMCustomPostTypeBase {
             __( 'Venue', 'myplugin_textdomain' ),
             function(){
                 global $post;
-                print Venues::locationDropDown( Events::getTrackId( $post->ID ) );
+                print Venues::locationDropDown( Events::getTrackId( $post->ID ) ) . '&nbsp;&nbsp;<a href="' . admin_url() . 'post.php?post='.Events::getTrackId( $post->ID ).'&action=edit">Edit this Venue</a>';
             },
             $this->my_cpt
         );
     }
-
-    // public function imageMetaField(){
-    //     add_meta_box(
-    //         'events_image',
-    //         'Image',
-    //         function(){
-    //             global $post;
-    //             $tmp = new Events;
-    //             $aid = $tmp->getAttachmentId( (int)$post->ID );
-    //             print $tmp->getAttachmentImage( (int)$post->ID );
-    //             print "<br />";
-    //             print '<input name="aid" value="'.$aid.'" type="hidden" />';
-    //             print '<input type="file" name="events_image" id="events_image" />';
-    //         },
-    //         $this->my_cpt
-    //     );
-    // }
-    // End 'post meta'
 
     // since we are in our Events object it is assumed
     // that we are getting the track id by event id!
@@ -454,24 +400,6 @@ class Events extends zMCustomPostTypeBase {
         return '/venues/'.basename( $post->guid );
     }
 
-    // Events has_many tracks, i.e. RCQ
-    public function getTrackEventCount( $post_id=null, $echo=false ){
-
-        $track_id = get_post_meta( $post_id, 'venues_id', true );
-
-        global $wpdb;
-        $sql = "SELECT count(*) FROM `{$wpdb->prefix}postmeta` WHERE `meta_key` LIKE 'venues_id' AND `meta_value` LIKE ".$track_id;
-
-        $count = $wpdb->get_var( $wpdb->prepare( $sql ) );
-
-        if ( is_null( $count ) )
-            $count = 0;
-
-        if ( $echo )
-            print '(' . $count . ')';
-        else
-            return $count;
-    }
 
     public function eventCount(){
         $count_posts = wp_count_posts( self::$instance->my_cpt );
@@ -580,6 +508,11 @@ class Events extends zMCustomPostTypeBase {
     public function getAttachmentImageURI(){}
 
     public function getDate( $event_id=null ){
+
+        if ( is_null( $event_id ) ){
+            global $post;
+            $event_id = $post->ID;
+        }
         return get_post_meta( $event_id, 'events_start-date', true );
     }
 
@@ -649,8 +582,8 @@ class Events extends zMCustomPostTypeBase {
 
     public function adminMenu(){
         $permission = 'manage_options';
-        add_submenu_page( 'edit.php?post_type='.$this->my_cpt, __('Settings', 'bmx_re'), __('Settings', 'bmx_re'),  $permission, $this->my_cpt.'_settings', function(){?>
-        <div class="wrap">
+        add_submenu_page( 'edit.php?post_type='.$this->my_cpt, __('Settings', 'bmx_re'), __('Settings', 'bmx_re'),  $permission, $this->my_cpt.'_settings', function(){
+        print '<div class="wrap">
             <h2>Feeds</h2>
             <p>
                 <a href="#" class="button preview-events-feed-handle">Preview New Feed</a>
@@ -661,12 +594,12 @@ class Events extends zMCustomPostTypeBase {
             <a href="#">http://bmxraceschedules.dev/races/events.json</a>
             <h3>Current Feed as Array</h3>
             <pre>
-                <?php print_r( json_decode( file_get_contents( '/opt/local/apache2/htdocs/bmxraceschedules/html/races/events.json' ) ) ); ?></pre>
+                ' . print_r( json_decode( file_get_contents( '/opt/local/apache2/htdocs/bmxraceschedules/html/races/events.json' ) ) ) . '</pre>
                 Preview Current Feed<br />
                 Preview New Feed<br />
                 Create Feed<br />
-        </div>
-        <?});
+        </div>';
+        });
     }
 
     public function feedPreviewNew(){
@@ -674,23 +607,32 @@ class Events extends zMCustomPostTypeBase {
         die('here');
     }
 
+
     /**
      * @todo Narrow down results to show from today on
      * @todo $end_date support
      */
-    public function getMonth( $month_num=null, $start_date=null, $end_date=null ){
+    public function getMonth( $start_date=null, $end_date=null ){
 
-        $date = date('Y-n');
+        if ( is_null( $start_date ) ){
+            $date = date('Y-n');
+        } else {
+            $date = date( 'Y-n', strtotime( $start_date ) );
+        }
 
         global $wpdb;
 
         $query = "SELECT distinct( post_id )
         FROM {$wpdb->prefix}postmeta
         WHERE meta_key LIKE 'events_start-date'
-        AND meta_value LIKE '{$date}%'
-        ORDER BY meta_value DESC;";
+        AND meta_value LIKE '{$date}-%'";
+
+        // Should return ALL events going on this month regardless of Location.
 
         $result = $wpdb->get_results( $query );
+
+        if ( empty( $result ) )
+            return;
 
         $event_ids = array();
         foreach ( $result as $wtf ){
@@ -701,11 +643,17 @@ class Events extends zMCustomPostTypeBase {
             'post_type' => 'events',
             'post_status' => 'publish',
             'post__in' => $event_ids,
-            'posts_per_page' => -1
+            'posts_per_page' => -1,
+            'order' => 'ASC',
+            'orderby' => 'events_start-date',
+            'meta_key' => 'events_start-date'
             );
+
         $events = new WP_Query( $args );
 
-        return $events->posts;
+        $tmp['items'] = $events->posts;
+        $tmp['count'] = $events->post_count;
+        return $tmp;
     }
 } // End 'CustomPostType'
 

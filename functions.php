@@ -120,7 +120,7 @@ function zm_ev_venue_info_pane( $post_id=null ){
         <ul class="inline meta-navigation">
             <li><a href="<?php Venues::getWebsite( $venue_id, $echo=true ); ?>" target="_blank">Website</a><span class="bar">|</span></li>
             <?php print $directions; ?>
-            <li><?php print Events::getTrackLink( $post_id, 'Events' ); ?> <span class="count"><?php Events::getTrackEventCount( $venue_id, $echo=true ); ?></span></li>
+            <li><?php print Events::getTrackLink( $post_id, 'Events' ); ?> <span class="count">(<?php print Venues::getSchedule( $venue_id )->post_count; ?>)</span></li>
         </ul>
     </div>
 </div><?php }
@@ -143,26 +143,26 @@ function adminInit(){
 add_action( 'admin_init', 'adminInit',99 );
 
 function adminMenu(){
-        $permission = 'manage_options';
-        add_submenu_page( 'edit.php?post_type=events', __('Settings', 'bmx_re'), __('Settings', 'bmx_re'),  $permission, 'wpmc_settings', function(){?>
-        <div class="wrap">
-
-            <h2>Settings</h2>
-            <form action="options.php" method="post" class="row-container">
-                <?php settings_fields('wpmc_plugin_options'); ?>
-                <?php do_action('zm_social_settings'); ?>
-                <?php do_action('zm_gmaps_settings'); ?>
-                <?php do_action('zm_weather_settings'); ?>
-
-                <div class="button-container">
-                    <input name="Submit" type="submit" class="button " value="<?php esc_attr_e('Save Changes'); ?>" />
-                </div>
-
-            </form>
-        </div>
-        <?});
+    $permission = 'manage_options';
+    add_submenu_page( 'edit.php?post_type=events', __('Settings', 'bmx_re'), __('Settings', 'bmx_re'),  $permission, 'wpmc_settings', 'demo_callback' );
 }
 add_action( 'admin_menu', 'adminMenu' );
+
+function demo_callback(){?>
+    <div class="wrap">
+        <h2>Settings</h2>
+        <form action="options.php" method="post" class="row-container">
+            <?php settings_fields('wpmc_plugin_options'); ?>
+            <?php do_action('zm_social_settings'); ?>
+            <?php do_action('zm_gmaps_settings'); ?>
+            <?php do_action('zm_weather_settings'); ?>
+            <div class="button-container">
+                <input name="Submit" type="submit" class="button " value="<?php esc_attr_e('Save Changes'); ?>" />
+            </div>
+        </form>
+    </div>
+<?php }
+
 
 function zm_events_conut(){
     print Events::eventCount();
@@ -170,4 +170,34 @@ function zm_events_conut(){
 
 function zm_venues_count(){
     print Venues::trackCount();
+}
+
+/**
+ * Gets the custom date for an Event given the current $post->ID.
+ *
+ * Either returns the date from the $prefix_postmeta table
+ * for a single event OR for Events that span multiple dates
+ * will return start date and end date.
+ *
+ * @param $post_id
+ * @param $both bool, display start and end date, or just start date
+ * @uses get_post_custom_values();
+ */
+function zm_event_date( $post_id=null, $both=true ){
+
+    if ( is_null( $post_id ) ) {
+        global $post;
+        $post_id = $post->ID;
+    }
+
+    $start = get_post_meta( $post_id, 'events_start-date', true );
+    $end = get_post_meta( $post_id, 'events_end-date', true );
+
+    if ( $end && $both ){
+        $date = date( 'M j', strtotime( $start ) ) . date( ' - M j, Y', strtotime( $end ) );
+    } else {
+        $date = date( 'M j, Y', strtotime( $start ) );
+    }
+
+    print $date;
 }
