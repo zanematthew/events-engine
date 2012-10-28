@@ -18,35 +18,23 @@ class Events extends zMCustomPostTypeBase {
      */
     public function __construct() {
 
-        wp_localize_script( 'my-ajax-request', 'MyAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
-
         self::$instance = $this;
         parent::__construct();
 
         $this->my_cpt = strtolower( get_class( self::$instance ) );
 
         if ( is_admin() ){
-            // @todo create a generic method for 'zMCustomPostTypeBase', which
-            // handles post meta in events.php
             add_action( 'add_meta_boxes', array( &$this, 'locationMetaField' ) );
-            // add_action( 'add_meta_boxes', array( &$this, 'imageMetaField' ) );
             add_action( 'date_save', array( &$this, 'eventDateSave') );
             add_action( 'save_post', array( &$this, 'myplugin_save_postdata' ) );
-
-            // require_once LIB_ROOT_DIR . 'zm-upload/MediaUpload.php';
-            // add_action( 'post_edit_form_tag' , array( 'MediaUpload', 'addEnctype' ) );
 
             add_action( 'wp_ajax_feedPreviewNew', array( &$this, 'feedPreviewNew' ) );
         }
 
         register_activation_hook( __FILE__, array( &$this, 'registerActivation') );
 
-        $this->myPath();
-
-        // add_action( 'admin_menu', array( &$this, 'adminMenu' ) );
         add_action( 'wp_ajax_nopriv_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
         add_action( 'wp_ajax_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
-
     }
 
     public function adminJsCss(){

@@ -1,6 +1,10 @@
 <?php
 
 $venues = new Venues();
+
+$venues->models[] = 'venues';
+$venues->asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
+
 $venues->post_type = array(
     array(
         'name' => 'Venue',

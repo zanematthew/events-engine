@@ -4,13 +4,15 @@
  *
  */
 
-$tmp_cpt = 'events';
-
 $event = new Events();
+
+$event->models[] = 'events';
+$event->asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
+
 $event->post_type = array(
     array(
         'name' => 'Race Event',
-        'type' => $tmp_cpt,
+        'type' => 'events',
         'has_one' => 'tracks', // add support 'has_many' => 'other_cpt'
         'menu_name' => 'Events',
         'rewrite' => array(
@@ -33,18 +35,18 @@ $event->post_type = array(
 $event->taxonomy = array(
      array(
          'name' => 'type',
-         'post_type' => $tmp_cpt,
+         'post_type' => 'events',
          'menu_name' => 'Type'
          ),
     array(
         'name' => 'events_tag',
-        'post_type' => $tmp_cpt,
+        'post_type' => 'events',
         'menu_name' => 'Tags',
         'slug' => 'events-tags'
         ),
     array(
         'name' => 'Attendees',
-        'post_type' => $tmp_cpt
+        'post_type' => 'events'
         )
 );
 
