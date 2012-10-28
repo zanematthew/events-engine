@@ -102,7 +102,7 @@ Class Venues extends zMCustomPostTypeBase {
         $venue_ids = json_decode( get_post_meta( $venues_id, 'bmx-race-event_id', true ) );
 
         if ( is_null( $venue_ids ) )
-            return;
+            return false;
 
         if ( $past ){
             $args = array(

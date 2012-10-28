@@ -120,7 +120,16 @@ function zm_ev_venue_info_pane( $post_id=null ){
         <ul class="inline meta-navigation">
             <li><a href="<?php Venues::getWebsite( $venue_id, $echo=true ); ?>" target="_blank">Website</a><span class="bar">|</span></li>
             <?php print $directions; ?>
-            <li><?php print Events::getTrackLink( $post_id, 'Events' ); ?> <span class="count">(<?php print Venues::getSchedule( $venue_id )->post_count; ?>)</span></li>
+            <li><?php print Events::getTrackLink( $post_id, 'Events' ); ?>
+            <span class="count">
+                (<?php if ( Venues::getSchedule( $venue_id ) ) {
+                    print Venues::getSchedule( $venue_id )->post_count;
+                } else {
+                    print 0;
+                }
+                ?>)
+            </span>
+            </li>
         </ul>
     </div>
 </div><?php }
