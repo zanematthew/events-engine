@@ -32,10 +32,11 @@ require_once 'functions.php';
 
 
 /**
- * Require the needed files for this plugin to run along with
- * enqueing our admin and front end asset files.
+ * Auto load our events.php, events_controller.php, etc.
+ * and enqueue our admin and front end asset files.
  */
-do_action( 'zm_easy_cpt_require', plugin_dir_path( __FILE__ ) );
+require_once plugin_dir_path( __FILE__ ) . '../zm-easy-cpt/plugin.php';
+zm_easy_cpt_reqiure( plugin_dir_path(__FILE__) );
 
 
 

@@ -571,4 +571,21 @@ global $post_type;
                 print "File created, size: {$file}\n";
         }
     }
+
+    static public function staticMap( $venue_id=null, $size=null ){
+        global $post;
+        $post_id = $post->ID;
+
+        $lat_long = get_post_meta( $post_id, 'lat', true ) . ',' . get_post_meta( $post->ID, 'long', true );
+        $staticmap_url = 'http://maps.googleapis.com/maps/api/staticmap?center=' . $lat_long . '&maptype=satellite&sensor=true&';
+
+        if ( $size == 'small' ){
+            $url = $staticmap_url . '&zoom=17&size=125x82';
+        }
+
+        if ( $size == 'medium' ){
+            $url = $staticmap_url . '&zoom=18&size=460x300';
+        }
+        print '<img src="'.$url.'" />';
+    }
 }

@@ -59,7 +59,7 @@ $venues->meta_sections['contact'] = array(
     )
 );
 
-// @todo remove 'name', derive, see method 'metaSectionRender'
+
 $venues->meta_sections['address'] = array(
     'name' => 'address',
     'label' => __('Address'),

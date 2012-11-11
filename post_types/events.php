@@ -6,7 +6,6 @@
 
 $event = new Events();
 
-$event->models[] = 'events';
 $event->asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
 
 $event->post_type = array(

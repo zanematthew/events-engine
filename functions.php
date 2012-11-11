@@ -210,3 +210,62 @@ function zm_event_date( $post_id=null, $both=true ){
 
     print $date;
 }
+
+add_filter( 'manage_edit-events_columns', 'set_custom_edit_book_columns' );
+function set_custom_edit_book_columns($columns) {
+    return $columns
+         + array('events_start-date' => __('Start Date'),
+                 'events_end-date' => __('End Date'));
+}
+
+add_action( 'manage_events_posts_custom_column' , 'custom_book_column', 10, 2 );
+function custom_book_column( $column, $post_id ) {
+    switch ( $column ) {
+      case 'events_start-date':
+        echo get_post_meta( $post_id , 'events_start-date' , true );
+        break;
+
+      case 'events_end-date':
+        echo get_post_meta( $post_id , 'events_end-date' , true );
+        break;
+    }
+}
+
+
+function zm_ev_js_var_setup(){
+    global $current_user;
+    get_currentuserinfo();
+
+    if ( get_user_meta( $current_user->ID, 'fb_id', true ) ){
+        $uid = get_user_meta( $current_user->ID, 'fb_id', true );
+    } else {
+        $uid = $current_user->ID;
+    }
+
+    ?><script type="text/javascript">
+
+    var _site_url   = "<?php print site_url(); ?>";
+    var _vendor_url = "<?php print site_url(); ?>/wp-content/plugins/zm-events-venues/vendor";
+
+    if ( typeof _user !== "object") {
+        var _user = {};
+        _user.profile = {};
+    }
+    _user.profile = {
+        user_login: "<?php print $current_user->user_login; ?>",
+        uid:        <?php print $uid; ?>
+    };
+
+    </script>
+<?php }
+
+
+function zm_ev_init(){
+    $dependencies[] = 'jquery';
+    wp_enqueue_script( 'zm-ev-tinymce-script', plugin_dir_url( __FILE__ ) . 'vendor/tinymce/jquery.tinymce.js', $dependencies  );
+
+    if ( is_user_logged_in() ){
+        add_action( 'wp_print_scripts', 'zm_ev_js_var_setup' );
+    }
+}
+add_action('init','zm_ev_init');

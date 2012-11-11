@@ -25,7 +25,7 @@ class Events extends zMCustomPostTypeBase {
 
         if ( is_admin() ){
             add_action( 'add_meta_boxes', array( &$this, 'locationMetaField' ) );
-            add_action( 'date_save', array( &$this, 'eventDateSave') );
+            // add_action( 'date_save', array( &$this, 'eventDateSave') );
             add_action( 'save_post', array( &$this, 'myplugin_save_postdata' ) );
 
             add_action( 'wp_ajax_feedPreviewNew', array( &$this, 'feedPreviewNew' ) );
@@ -142,7 +142,7 @@ class Events extends zMCustomPostTypeBase {
             return;
 
         // Verify nonce
-        Security::verifyPostSubmission( $_POST['post_type'] );
+        zm_easy_cpt_verify_post_submission( $_POST['post_type'] );
 
         $html = null;
 
@@ -178,15 +178,15 @@ class Events extends zMCustomPostTypeBase {
             'post_status' => 'publish'
         );
 
-        $_POST['entry_fee'] = sprintf("%01.2f", $_POST['entry_fee']);
+        $entry_fee = sprintf("%01.2f", $_POST['entry_fee']);
 
         $post_id = wp_insert_post( $post, true );
 
         // eventDateSave
-        do_action('date_save', $post_id);
+        // do_action('date_save', $post_id);
 
         $title = $_POST['post_title'];
-        $tracks_id = $_POST['tracks_id'];
+        $tracks_id = $_POST['venues_id'];
         $start_date = $_POST['events_start-date'];
         $end_date = $_POST['events_end-date'];
 
@@ -223,6 +223,8 @@ class Events extends zMCustomPostTypeBase {
 
             $this->updateVenue( $post_id, $tracks_id );
             $this->updateStartEndDate( $post_id, $start_date, $end_date );
+            $this->updateEntryFee( $post_id, $entry_fee );
+
 
             // Associate this post with an attachment_id if we have one.
             if ( isset( $_POST['attachment_id'] ) ) {
@@ -429,8 +431,8 @@ class Events extends zMCustomPostTypeBase {
     }
 
     public function updateStartEndDate( $post_id=null, $start_date=null, $end_date=null ){
-        $tmp['events_start-date'] = update_post_meta( $post_id, 'events_start-date', $start_date );
-        $tmp['events_end-date'] = update_post_meta( $post_id, 'events_end-date', $end_date );
+        $tmp[$this->my_cpt . '_start-date'] = update_post_meta( $post_id, $this->my_cpt . '_start-date', $start_date );
+        $tmp[$this->my_cpt . '_end-date'] = update_post_meta( $post_id, $this->my_cpt . '_end-date', $end_date );
         return $tmp;
     }
 
@@ -441,6 +443,15 @@ class Events extends zMCustomPostTypeBase {
      */
     public function updateAttachmentId( $post_id=null, $attachment_id=null ){
         return update_post_meta( $post_id, '_zm_attachement_id', $attachment_id );
+    }
+
+
+    /**
+     * Add or Update the Events Entry fee. note our post type "events" is
+     * ALWAYS derived!.
+     */
+    public function updateEntryFee( $post_id=null, $entry_fee=null ){
+        return update_post_meta( $post_id, $this->my_cpt . '_fee', $entry_fee );
     }
 
     /**
