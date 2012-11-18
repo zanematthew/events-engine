@@ -342,7 +342,7 @@ class Events extends zMCustomPostTypeBase {
             __( 'Venue', 'myplugin_textdomain' ),
             function(){
                 global $post;
-                print Venues::locationDropDown( Events::getTrackId( $post->ID ) ) . '&nbsp;&nbsp;<a href="' . admin_url() . 'post.php?post='.Events::getTrackId( $post->ID ).'&action=edit">Edit this Venue</a>';
+                print Venues::locationDropDown( Events::getVenueId( $post->ID ) ) . '&nbsp;&nbsp;<a href="' . admin_url() . 'post.php?post='.Events::getVenueId( $post->ID ).'&action=edit">Edit this Venue</a>';
             },
             $this->my_cpt
         );
@@ -350,7 +350,7 @@ class Events extends zMCustomPostTypeBase {
 
     // since we are in our Events object it is assumed
     // that we are getting the track id by event id!
-    public static function getTrackId( $post_id=null ){
+    public static function getVenueId( $post_id=null ){
         return get_post_meta( $post_id, 'venues_id', true );
     }
 
@@ -360,7 +360,7 @@ class Events extends zMCustomPostTypeBase {
      */
     public function getTrackLink( $post_id=null, $title=null, $anchor=null ){
 
-        $track_id = self::$instance->getTrackId( $post_id );
+        $track_id = self::$instance->getVenueId( $post_id );
 
         $post = get_post( $track_id );
 
@@ -383,7 +383,7 @@ class Events extends zMCustomPostTypeBase {
      * Returns ONLY the URI for a Venue
      */
     public function getVenueURI( $post_id=null ){
-        $track_id = self::$instance->getTrackId( $post_id );
+        $track_id = self::$instance->getVenueId( $post_id );
 
         $post = get_post( $track_id );
 
@@ -547,16 +547,16 @@ class Events extends zMCustomPostTypeBase {
 
             // just for fucking sanity
             $event_id = $posts->ID;
-            $track_id = Events::getTrackId( $event_id );
+            $track_id = Events::getVenueId( $event_id );
 
             $this_event['ID'] = $event_id;
             $this_event['t'] = $posts->post_title;
             $this_event['tr'] = Events::getTrackTitle( $event_id );
             $this_event['ta'] = Events::getTags( $event_id );
 
-            $this_event['c'] = Venues::getMetaField( 'city', $track_id );
-            $this_event['s'] = Venues::getMetaField( 'state', $track_id );
-            $this_event['r'] = Venues::getRegion( $track_id );
+            $this_event['c'] = Venues::getAttribute( array( 'key' => 'city', 'venues_id' => $track_id ) );
+            $this_event['s'] = Venues::getAttribute( array( 'key' => 'state', 'venues_id' => $track_id ) );
+            // $this_event['r'] = Venues::getAttribute( array( 'venue_id' => $track_id ) ); ??
 
             $this_event['u'] = '/events/'.$posts->post_name . '/';
 

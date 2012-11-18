@@ -100,14 +100,14 @@ function zm_ev_venue_info_pane( $post_id=null ){
     global $post_type;
 
     if ( $post_type == 'events' ){
-        $venue_id = Events::getTrackId( $post_id );
+        $venue_id = Events::getVenueId( $post_id );
     } else {
         $venue_id = $post_id;
     }
 
     if ( get_option('zm_geo_location_version' ) ){
         $location = zm_geo_location_get();
-        $directions = '<li><a href="https://maps.google.com/maps?saddr='.$location['city'].','.$location['region_full'].'&daddr='.Venues::getLatLon( $venue_id ).'"target="_blank">Directions</a><span class="bar">|</span></li>';
+        $directions = '<li><a href="https://maps.google.com/maps?saddr='.$location['city'].','.$location['region_full'].'&daddr='.Venues::getAttribute( array( 'key' => 'LatLong' ) ).'"target="_blank">Directions</a><span class="bar">|</span></li>';
     } else {
         $directions = null;
     }
@@ -115,10 +115,10 @@ function zm_ev_venue_info_pane( $post_id=null ){
     ?>
     <div class="venue-info">
     <div class="content">
-        <h3><?php print Venues::getName( $venue_id, $echo=true ); ?></h3>
-        <?php Venues::getStreet( $venue_id, $echo=true ); ?>
+        <h3><?php print Venues::getAttribute( array( 'key' => 'title', 'venue_id' => $venue_id, 'echo' => true ) ); ?></h3>
+        <?php Venues::getAttribute( array( 'key' => 'street', 'echo' => true ) ); ?>
         <ul class="inline meta-navigation">
-            <li><a href="<?php Venues::getWebsite( $venue_id, $echo=true ); ?>" target="_blank">Website</a><span class="bar">|</span></li>
+            <li><a href="<?php Venues::getAttribute( array( 'key' => 'website', 'echo' => true ) ); ?>" target="_blank">Website</a><span class="bar">|</span></li>
             <?php print $directions; ?>
             <li><?php print Events::getTrackLink( $post_id, 'Events' ); ?>
             <span class="count">
@@ -133,7 +133,7 @@ function zm_ev_venue_info_pane( $post_id=null ){
         </ul>
     </div>
 </div><?php }
-add_action( 'zm_ev_venue_info', 'zm_ev_venue_info_pane', 8, 1 );
+
 
 global $_zm_setting_fields;
 function adminInit(){
@@ -172,14 +172,6 @@ function demo_callback(){?>
     </div>
 <?php }
 
-
-function zm_events_conut(){
-    print Events::eventCount();
-}
-
-function zm_venues_count(){
-    print Venues::trackCount();
-}
 
 /**
  * Gets the custom date for an Event given the current $post->ID.

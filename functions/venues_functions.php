@@ -208,116 +208,6 @@ Class Venues extends zMCustomPostTypeBase {
         return $count[0]->count ;
     }
 
-    /**
-     * @todo facade
-     */
-    public function getMetaField( $meta_field=null, $track_id=null, $echo=false ){
-        if ( is_null( $track_id ) ) {
-            global $post;
-
-            if ( empty( $post ) )
-                return;
-
-            $track_id = $post->ID;
-        }
-
-        // @todo remove prefix $post_type from meta fields
-        $field = self::$instance->cpt.'_'.$meta_field;
-        $tmp = get_post_meta( $track_id, $field, true );
-
-        // @todo -- yes, I really put "" into the db
-        if ( empty( $tmp ) || $tmp == '""' || $tmp == '' ) {
-            $tmp = get_post_meta( $track_id, $meta_field, true );
-        }
-
-        if ( $echo )
-            print $tmp;
-        else
-            return $tmp;
-    }
-
-    public function getStreet( $track_id=null, $echo=false ){
-        if ( is_null( $track_id ) ) {
-            global $post;
-            $track_id = $post->ID;
-        }
-
-        $field = self::$instance->cpt.'_street';
-
-        if ( $echo )
-            print get_post_meta( $track_id, $field, true );
-        else
-            return get_post_meta( $track_id, $field, true );
-    }
-
-    public function getWebsite( $track_id=null, $echo=false ){
-        if ( is_null( $track_id ) ) {
-            global $post;
-            $track_id = $post->ID;
-        }
-
-        $field = self::$instance->cpt.'_website';
-
-        if ( $echo )
-            print get_post_meta( $track_id, $field, true );
-        else
-            return get_post_meta( $track_id, $field, true );
-    }
-
-    public static function getLatLon( $track_id=null, $echo=false ){
-
-        $lat = self::$instance->getMetaField( 'lat', $track_id );
-
-        if ( empty( $lat ) ) {
-            return false;
-        } else {
-            $lon = self::$instance->getMetaField( 'long', $track_id );
-
-            if ( $echo )
-                print $lat . ',' . $lon;
-            else
-                return $lat . ',' . $lon;
-        }
-    }
-
-    // Really needs to be called "coast"
-    public function getRegion( $track_id=null ){
-
-        if ( is_null( $track_id ) ) {
-            global $post;
-            $track_id = $post->ID;
-        }
-
-        return zm_ev_get_tax_term( array( 'post_id' => $track_id, 'taxonomy' => 'region' ) );
-    }
-
-    public function getState( $track_id=null ){
-
-        global $post;
-
-        if ( is_null( $track_id ) && $post->post_type == 'events' ){
-            $track_id = Events::getTrackId( $post->ID );
-        } else {
-            $track_id = $post->ID;
-        }
-
-        return get_post_meta( $track_id, 'venues' . '_state', true );
-    }
-
-    public function getCity( $track_id=null ){
-
-        global $post;
-global $post_type;
-// var_dump( $post_type );
-
-        if ( is_null( $track_id ) && $post->post_type == 'events' ){
-            $track_id = Events::getTrackId( $post->ID );
-        } else {
-            $track_id = $post->ID;
-        }
-
-        return get_post_meta( $track_id, 'venues' . '_city', true );
-    }
 
     public function getTags( $track_id=null ){
 
@@ -482,13 +372,58 @@ global $post_type;
         return $tmp;
     }
 
-    /**
-     * Return the name, i.e., title
-     * @param $id
-     */
-    public function getName( $id ){
-        return get_the_title( $id );
+    public function getAttribute( $params=array() ){
+
+        extract( $params );
+
+        if ( empty( $key ) ) die( "Keys open doors!" );
+
+        // If the venues_id is not passed in we assume that are our global
+        // post is an Event, therefore we must get the venues_id for the
+        // current post.
+        if ( empty( $venues_id ) ){
+            global $post;
+
+            if ( $post->post_type == 'events' ){
+                $id = Events::getVenueId( $post->ID );
+            } else {
+                $id = $post->ID;
+            }
+        } else {
+            $id = $venues_id;
+        }
+
+        switch ( $key ) {
+            case 'city':
+            case 'state':
+            case 'email':
+            case 'website':
+            case 'street':
+            case 'phone':
+                $field = get_post_meta( $id, self::$instance->cpt . '_' . $key, true );
+                break;
+            case 'LatLong':
+                $lat = get_post_meta( $id, 'lat', true );
+                $long = get_post_meta( $id, 'long', true );
+                $field = $lat . ',' . $long;
+                break;
+            case 'title':
+                $field = get_the_title( $id );
+                break;
+            case 'region': // Really is "coast"
+                $field = zm_ev_get_tax_term( array( 'post_id' => $id, 'taxonomy' => 'region' ) );
+                break;
+            default:
+                # code...
+                break;
+        }
+
+        if ( empty( $echo ) )
+            return $field;
+        else
+            print $field;
     }
+
 
     /**
      * Returns the contacts email address
@@ -529,7 +464,7 @@ global $post_type;
             $tmp_lat = get_post_meta( $post->ID, 'lat', true );
             $tmp_long = get_post_meta( $post->ID, 'long', true );
             $tmp_street = get_post_meta( $post->ID, $post_type . '_street', true );
-            $tmp_region = $tracks_obj->getRegion( $post->ID );
+            $tmp_region = $tracks_obj->getAttribute( array( 'venue_id' => $post->ID ) );
             $tmp_tags = $tracks_obj->getTags( $post->ID );
             $tmp_schedule = $tracks_obj->getSchedule( $post->ID );
             $tmp_website = get_post_meta( $post->ID, $post_type . '_website', true );
