@@ -390,10 +390,20 @@ class Events extends zMCustomPostTypeBase {
         return '/venues/'.basename( $post->guid );
     }
 
-
-    public function eventCount(){
+    /**
+     * Retrive the number of Events
+     *
+     * @param $echo Either return the results or print them
+     * @todo transient
+     * @return Count of events (or prints)
+     */
+    public function eventCount( $echo=true ){
         $count_posts = wp_count_posts( self::$instance->my_cpt );
-        return $count_posts->publish;
+        if ( $echo ){
+            print $count_posts->publish . __( ' events', 'zm_events_venue' );
+        } else {
+            return $count_posts->publish;
+        }
     }
 
     public function getTrackTitle( $event_id=null ){

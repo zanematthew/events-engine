@@ -164,12 +164,19 @@ Class Venues extends zMCustomPostTypeBase {
     }
 
     /**
-     * Return Venue count
+     * Retrive the number of Events
+     *
+     * @param $echo Either return the results or print them
+     * @return Count of events (or prints)
      * @todo transient
      */
-    public function trackCount(){
+    public function venueCount( $echo=true ){
         $count_posts = wp_count_posts( self::$instance->cpt );
-        return $count_posts->publish;
+        if ( $echo ){
+            print $count_posts->publish . __( ' venues', 'zm_events_venue' );
+        } else {
+            return $count_posts->publish;
+        }
     }
 
     /**
