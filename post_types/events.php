@@ -10,7 +10,7 @@ $event->asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
 
 $event->post_type = array(
     array(
-        'name' => 'Race Event',
+        'name' => 'Event',
         'type' => 'events',
         'has_one' => 'tracks', // add support 'has_many' => 'other_cpt'
         'menu_name' => 'Events',
