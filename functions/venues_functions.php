@@ -314,6 +314,7 @@ Class Venues extends zMCustomPostTypeBase {
      * @todo transient
      */
     public function getVenueByRegion( $region=null ){
+
         $args = array(
             'post_type' => $this->cpt,
             'posts_per_page' => -1,
@@ -324,10 +325,16 @@ Class Venues extends zMCustomPostTypeBase {
                     'value' => $region,
                     'compare' => '='
                     )
-                )
+                ),
+            'orderby' => 'meta_value',
+            'meta_key' => 'venues_state'
             );
         $query = new WP_Query( $args );
-        return $query->posts;
+
+        if ( $query->post_count == 0 )
+            return false;
+        else
+            return $query->posts;
     }
 
     /**
