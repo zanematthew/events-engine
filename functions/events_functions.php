@@ -665,10 +665,3 @@ class Events extends zMCustomPostTypeBase {
         return $tmp;
     }
 } // End 'CustomPostType'
-
-
-function filter_where( $start_date=null, $end_date=null ) {
-    // posts in the last 30 days
-    $where .= " AND post_date >= '" . date('Y-m-d', strtotime('-60 days')) . "'" . " AND post_date <= '" . date('Y-m-d', strtotime('-30 days')) . "'";
-    return $where;
-}

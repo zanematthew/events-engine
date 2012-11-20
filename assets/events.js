@@ -13,7 +13,7 @@ jQuery( document ).ready(function( $ ){
      *
      * Only if the jQuery plugin is loaded and a user is logged in.
      */
-    if ( jQuery().tinymce && _user.ID != 0 ) {
+    if ( typeof _user != "undefined" && jQuery().tinymce && _user.ID != 0 ) {
         $('#tinymce_textarea').tinymce({
 
             // Location of TinyMCE script
