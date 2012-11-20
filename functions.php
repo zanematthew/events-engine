@@ -255,9 +255,6 @@ function zm_ev_js_var_setup(){
 function zm_ev_init(){
     $dependencies[] = 'jquery';
     wp_enqueue_script( 'zm-ev-tinymce-script', plugin_dir_url( __FILE__ ) . 'vendor/tinymce/jquery.tinymce.js', $dependencies  );
-
-    if ( is_user_logged_in() ){
-        add_action( 'wp_print_scripts', 'zm_ev_js_var_setup' );
-    }
+    add_action( 'wp_print_scripts', 'zm_ev_js_var_setup' );
 }
 add_action('init','zm_ev_init');
