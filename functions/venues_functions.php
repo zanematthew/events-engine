@@ -433,6 +433,27 @@ Class Venues extends zMCustomPostTypeBase {
 
 
     /**
+     * Return array of meta keys from the Database, not based
+     * on naming convention! "{$post_type}_{$meta_key}"
+     */
+    static public function getMetaKeys(){
+
+        global $wpdb;
+
+        $cpt = self::$instance->cpt;
+
+        $results = $wpdb->get_results( "select distinct( meta_key ) from {$wpdb->prefix}postmeta where meta_key like '%venues%' ORDER BY meta_key ASC;" );
+        $tmp = array();
+
+        foreach( $results as $result ){
+            $tmp[] = $result->meta_key;
+        }
+
+        return $tmp;
+    }
+
+
+    /**
      * Returns the contacts email address
      * @param $id
      */
