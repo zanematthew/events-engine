@@ -81,6 +81,10 @@ $venues->meta_sections['address'] = array(
             'type' => 'text'
             ),
         array(
+            'label' => __('Zip'),
+            'type' => 'text'
+            ),
+        array(
             'label' => __('Full Address/Street'),
             'type' => 'text',
             'name' => 'venues_street',
