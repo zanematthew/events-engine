@@ -117,6 +117,9 @@ function zm_ev_venue_info_pane( $post_id=null ){
     <div class="content">
         <h3><?php print Venues::getAttribute( array( 'key' => 'title', 'venue_id' => $venue_id, 'echo' => true ) ); ?></h3>
         <?php Venues::getAttribute( array( 'key' => 'street', 'echo' => true ) ); ?>
+        <br /><?php Venues::getAttribute( array( 'key' => 'city', 'echo' => true ) ); ?>,
+        <?php Venues::getAttribute( array( 'key' => 'state', 'echo' => true ) ); ?>
+        <span id="zm_ev_venue_zip"><?php Venues::getAttribute( array( 'key' => 'zip', 'echo' => true ) ); ?></span>
         <ul class="inline meta-navigation">
             <li><a href="<?php Venues::getAttribute( array( 'key' => 'website', 'echo' => true ) ); ?>" target="_blank">Website</a><span class="bar">|</span></li>
             <?php print $directions; ?>

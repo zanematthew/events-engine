@@ -407,6 +407,9 @@ Class Venues extends zMCustomPostTypeBase {
             case 'website':
             case 'street':
             case 'phone':
+            case 'zip':
+            case 'lat':
+            case 'long':
                 $field = get_post_meta( $id, self::$instance->cpt . '_' . $key, true );
                 break;
             case 'LatLong':

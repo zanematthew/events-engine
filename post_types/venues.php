@@ -66,13 +66,11 @@ $venues->meta_sections['address'] = array(
     'fields' => array(
         array(
             'label' => 'Lat',
-            'type' => 'text',
-            'name' => 'lat'
+            'type' => 'text'
             ),
         array(
             'label' => 'Long',
-            'type' => 'text',
-            'name' => 'long'
+            'type' => 'text'
             ),
         array(
             'label' => __('City'),
