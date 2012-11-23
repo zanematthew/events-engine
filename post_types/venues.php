@@ -50,7 +50,6 @@ $venues->meta_sections['contact'] = array(
         array(
             'label' => 'Primary Phone',
             'type' => 'text',
-            'name' => 'primary_contact'
         ),
         array(
             'label' => 'Phone',
