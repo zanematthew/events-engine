@@ -222,6 +222,8 @@ class Events extends zMCustomPostTypeBase {
             $twitter = '<!-- Twitter --><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.$link.'" data-text="Check out! '.$title.'">Tweet</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>';
 
             $this->updateVenue( $post_id, $tracks_id );
+            Venues::updateSchedule( $tracks_id, $post_id );
+
             $this->updateStartEndDate( $post_id, $start_date, $end_date );
             $this->updateEntryFee( $post_id, $entry_fee );
 
@@ -231,14 +233,6 @@ class Events extends zMCustomPostTypeBase {
                 $this->updateAttachmentId( $post_id, $_POST['attachment_id'] );
                 unset( $_POST['attachment_id'] );
             }
-
-            // update track schedule
-            // @todo make a method
-            $tmp_events_id = get_post_meta( $tracks_id, 'bmx-race-event_id', true );
-            $tmp_events_id = json_decode( $tmp_events_id );
-            $tmp_events_id[] = $post_id;
-            $events_id = json_encode( $tmp_events_id );
-            update_post_meta( $tracks_id, 'bmx-race-event_id', $events_id );
 
             $html .= '<div class="success-container">';
             $html .= '<div class="message">';
@@ -324,7 +318,7 @@ class Events extends zMCustomPostTypeBase {
     /**
      * When the post is saved, call our custom action
      */
-    public function myplugin_save_postdata( $post_id ) {
+    public function myplugin_save_postdata( $events_id ) {
 
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE || ! isset( $_POST['venues_id'] ) )
             return;
@@ -332,8 +326,10 @@ class Events extends zMCustomPostTypeBase {
         if ( isset( $_POST['post_type'] ) && $_POST['post_type'] != $this->my_cpt )
             return;
 
-        // do_action('date_save', $post_id);
-        $this->updateVenue( $post_id, $_POST['venues_id'] );
+        $current_venues_id = get_post_meta( $events_id, 'venues_id', true );
+
+        $this->updateVenue( $events_id, $_POST['venues_id'] );
+        Venues::updateSchedule( $_POST['venues_id'], $events_id, $current_venues_id );
     }
 
     public function locationMetaField(){
@@ -436,8 +432,8 @@ class Events extends zMCustomPostTypeBase {
     }
 
     // post_id == events_id
-    public function updateVenue( $post_id=null, $tracks_id=null ){
-        return update_post_meta( $post_id, 'venues_id', $tracks_id );
+    public function updateVenue( $post_id=null, $venues_id=null ){
+        return update_post_meta( $post_id, 'venues_id', $venues_id );
     }
 
     public function updateStartEndDate( $post_id=null, $start_date=null, $end_date=null ){

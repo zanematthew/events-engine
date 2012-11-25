@@ -99,7 +99,7 @@ Class Venues extends zMCustomPostTypeBase {
      */
     public function getSchedule( $venues_id=null, $past=true ){
 
-        $venue_ids = json_decode( get_post_meta( $venues_id, 'bmx-race-event_id', true ) );
+        $venue_ids = json_decode( get_post_meta( $venues_id, 'events_id', true ) );
 
         if ( is_null( $venue_ids ) )
             return false;
@@ -306,6 +306,49 @@ Class Venues extends zMCustomPostTypeBase {
 
     public function updateMapImageMeta( $track_id=null, $url=null, $size=null ){
         return update_post_meta( $track_id, 'tracks_map_'.$size, $url );
+    }
+
+
+    /**
+     * Add an event from the venues schedule
+     */
+    public function updateSchedule( $venues_id=null, $events_id=null, $previous_venues_id=null ){
+
+        // If we have a previous venues ID, we assume this event has CHANGED
+        // VENUES! And we remove it from the previous venues schedule!
+        if ( ! empty( $previous_venues_id ) ){
+
+            $current_schedule = get_post_meta( $previous_venues_id, 'events_id', true );
+            $index = array_search( $previous_venues_id, $current_schedule );
+
+            unset( $current_schedule[ $index ] );
+            $current_schedule = array_values( $current_schedule );
+
+            update_post_meta( $previous_venues_id, 'events_id', $current_schedule );
+        }
+
+        $current_schedule = get_post_meta( $venues_id, 'events_id', true );
+
+        // This event is in our schedule already do nothing
+        if ( $current_schedule && in_array( $events_id, $current_schedule ) ){
+            // print "This event is in our schedule already.\n";
+            // print "do nothing!\n";
+            return;
+        }
+
+        // Do we have a current schedule?
+        // Add the new event to our current schedule
+        if ( $current_schedule ){
+            $current_schedule[] = $events_id;
+            $schedule = $current_schedule;
+        } else {
+            // Create our schedule and add our event to it
+            $new_schedule = array();
+            $new_schedule[] = $events_id;
+            $schedule = $new_schedule;
+        }
+
+        update_post_meta( $venues_id, 'events_id', $schedule );
     }
 
     /**
