@@ -99,9 +99,9 @@ Class Venues extends zMCustomPostTypeBase {
      */
     public function getSchedule( $venues_id=null, $past=true ){
 
-        $venue_ids = json_decode( get_post_meta( $venues_id, 'events_id', true ) );
+        $venue_ids = get_post_meta( $venues_id, 'events_id', true );
 
-        if ( is_null( $venue_ids ) )
+        if ( empty( $venue_ids ) )
             return false;
 
         if ( $past ){
@@ -474,7 +474,7 @@ Class Venues extends zMCustomPostTypeBase {
         if ( empty( $echo ) )
             return $field;
         else
-            print $field;
+            print '<span class="'.$key.'">' . $field . '</span>';
     }
 
 
