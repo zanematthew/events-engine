@@ -121,7 +121,7 @@ function zm_ev_venue_info_pane( $post_id=null ){
         <?php Venues::getAttribute( array( 'key' => 'state', 'echo' => true ) ); ?>
         <span id="zm_ev_venue_zip"><?php Venues::getAttribute( array( 'key' => 'zip', 'echo' => true ) ); ?></span>
         <ul class="inline meta-navigation">
-            <li><a href="<?php Venues::getAttribute( array( 'key' => 'website', 'echo' => true ) ); ?>" target="_blank">Website</a><span class="bar">|</span></li>
+            <li><a href="<?php print Venues::getAttribute( array( 'key' => 'website' ) ); ?>" target="_blank">Website</a><span class="bar">|</span></li>
             <?php print $directions; ?>
             <li><?php print Events::getTrackLink( $post_id, 'Venue' ); ?>
             <span class="count">
