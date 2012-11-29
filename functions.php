@@ -8,7 +8,7 @@ function zm_ev_admin_scripts( $hook ){
      * Load our datetime picker on edit post page or
      * adding new post page and only on our cpt
      */
-    if ( 'post.php' == $hook || 'post-new.php' == $hook && isset( $_GET ) && $_GET['post_type'] == 'events' ){
+    if ( 'post.php' == $hook || 'post-new.php' == $hook && ! empty( $_GET['post_type'] ) && $_GET['post_type'] == 'events' ){
 
         // Start Vendor files
         wp_enqueue_script( 'zm-ev-jquery-ui-script', plugin_dir_url( __FILE__ ) . 'vendor/jquery-ui/js/jquery-ui-1.8.20.custom.min.js', $dependencies  );
