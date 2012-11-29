@@ -35,6 +35,8 @@ class Events extends zMCustomPostTypeBase {
 
         add_action( 'wp_ajax_nopriv_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
         add_action( 'wp_ajax_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
+
+        add_action( 'before_delete_post', array( &$this, 'beforeDeletePost') );
     }
 
     public function adminJsCss(){
@@ -329,7 +331,8 @@ class Events extends zMCustomPostTypeBase {
         $current_venues_id = get_post_meta( $events_id, 'venues_id', true );
 
         $this->updateVenue( $events_id, $_POST['venues_id'] );
-        Venues::updateSchedule( $_POST['venues_id'], $events_id, $current_venues_id );
+        $venues = New Venues;
+        $venues->updateSchedule( $_POST['venues_id'], $events_id, $current_venues_id );
     }
 
     public function locationMetaField(){
@@ -659,5 +662,19 @@ class Events extends zMCustomPostTypeBase {
         $tmp['items'] = $events->posts;
         $tmp['count'] = $events->post_count;
         return $tmp;
+    }
+
+
+    public function beforeDeletePost( $postid ){
+
+        global $post_type;
+        if ( $post_type != $this->my_cpt ) return;
+
+        $events_id = $postid;
+        $venues_id = get_post_meta( $events_id, 'venues_id', true );
+        $venues = New Venues;
+
+        $venues->removeEventFromSchedule( $venues_id, $events_id );
+
     }
 } // End 'CustomPostType'

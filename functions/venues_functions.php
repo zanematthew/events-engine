@@ -299,8 +299,7 @@ Class Venues extends zMCustomPostTypeBase {
 
         $google_image = file_get_contents( $google_image_url );
         $my_image = file_put_contents( $path, $google_image );
-// var_dump( $google_image );
-// var_dump( $my_image );
+
         return $my_image;
     }
 
@@ -310,29 +309,46 @@ Class Venues extends zMCustomPostTypeBase {
 
 
     /**
-     * Add an event from the venues schedule
+     * Removes an Event from a Venues schedule
+     *
+     * @param $venues_id (int) The Venues to derive the schedule from.
+     * @param $events_id (int) The Event to be removed.
+     */
+    public function removeEventFromSchedule( $venues_id=null, $events_id=null ){
+
+        $current_schedule = get_post_meta( $venues_id, 'events_id', true );
+
+        if ( in_array( $events_id, $current_schedule) ){
+            $index = array_search( $events_id, $current_schedule );
+
+            unset( $current_schedule[ $index ] );
+            $current_schedule = array_values( $current_schedule );
+
+            return update_post_meta( $venues_id, 'events_id', $current_schedule );
+        }
+    }
+
+
+    /**
+     * Add or change an Event to the Venues schedule
+     *
+     * @param $venues_id (int) The Venues ID
+     * @param $events_id (int) The Events ID
+     * @param $previous_venues_id (int) The previous Venues ID, this is used when
+     * an Event is changing Venues.
      */
     public function updateSchedule( $venues_id=null, $events_id=null, $previous_venues_id=null ){
 
         // If we have a previous venues ID, we assume this event has CHANGED
         // VENUES! And we remove it from the previous venues schedule!
         if ( ! empty( $previous_venues_id ) ){
-
-            $current_schedule = get_post_meta( $previous_venues_id, 'events_id', true );
-            $index = array_search( $previous_venues_id, $current_schedule );
-
-            unset( $current_schedule[ $index ] );
-            $current_schedule = array_values( $current_schedule );
-
-            update_post_meta( $previous_venues_id, 'events_id', $current_schedule );
+            $this->removeEventFromSchedule( $previous_venues_id, $events_id );
         }
 
         $current_schedule = get_post_meta( $venues_id, 'events_id', true );
 
         // This event is in our schedule already do nothing
         if ( $current_schedule && in_array( $events_id, $current_schedule ) ){
-            // print "This event is in our schedule already.\n";
-            // print "do nothing!\n";
             return;
         }
 
