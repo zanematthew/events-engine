@@ -607,8 +607,10 @@ Class Venues extends zMCustomPostTypeBase {
     static public function staticMap( $venue_id=null, $size=null ){
         global $post;
         $post_id = $post->ID;
+        $cpt = self::$instance->cpt;
 
-        $lat_long = get_post_meta( $post_id, 'lat', true ) . ',' . get_post_meta( $post->ID, 'long', true );
+        $lat_long = get_post_meta( $post_id, $cpt . '_lat', true ) . ',' . get_post_meta( $post->ID, $cpt . '_long', true );
+
         $staticmap_url = 'http://maps.googleapis.com/maps/api/staticmap?center=' . $lat_long . '&maptype=satellite&sensor=true&';
 
         if ( $size == 'small' ){
@@ -618,6 +620,7 @@ Class Venues extends zMCustomPostTypeBase {
         if ( $size == 'medium' ){
             $url = $staticmap_url . '&zoom=18&size=460x300';
         }
+
         print '<img src="'.$url.'" />';
     }
 }
