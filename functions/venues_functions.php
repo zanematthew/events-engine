@@ -85,6 +85,7 @@ Class Venues extends zMCustomPostTypeBase {
          * register_taxonomy and many other usefullness.
          */
         parent::__construct();
+
     }
 
     /**
@@ -605,11 +606,14 @@ Class Venues extends zMCustomPostTypeBase {
     }
 
     static public function staticMap( $venue_id=null, $size=null ){
-        global $post;
-        $post_id = $post->ID;
-        $cpt = self::$instance->cpt;
 
-        $lat_long = get_post_meta( $post_id, $cpt . '_lat', true ) . ',' . get_post_meta( $post->ID, $cpt . '_long', true );
+        if ( empty( $venue_id ) ){
+            global $post;
+            $venue_id = $post->ID;
+        }
+
+        $cpt = self::$instance->cpt;
+        $lat_long = get_post_meta( $venue_id, $cpt . '_lat', true ) . ',' . get_post_meta( $venue_id, $cpt . '_long', true );
 
         $staticmap_url = 'http://maps.googleapis.com/maps/api/staticmap?center=' . $lat_long . '&maptype=satellite&sensor=true&';
 
