@@ -109,3 +109,35 @@ $venues->meta_sections['social_media'] = array(
         )
     )
 );
+
+$venues->meta_sections['schedule'] = array(
+    'name' => 'schedule',
+    'label' => __('Schedule','myplugin_textdomain'),
+    'fields' => array(
+        array(
+            'type' => 'html',
+            'value' => tmp_make_schedule()
+        )
+    )
+);
+
+
+function tmp_make_schedule(){
+
+    if ( empty( $_GET['post'] ) ) return;
+
+    $tmp_schedule = Venues::getSchedule( $_GET['post'] );
+
+    if ( ! is_object( $tmp_schedule ) || $tmp_schedule->post_count == 0 )
+        return __("This Venue has no Events.", "zm_ev" );
+
+    $html = null;
+    foreach ( $tmp_schedule->posts as $schedule ) {
+        $html .= '<p>';
+        $html .= '<a href="' . admin_url('post.php?post=' . $schedule->ID . '&action=edit') . '">Edit</a> &nbsp;&nbsp;';
+        $html .= $schedule->post_title;
+        $html .= '</p>';
+    }
+
+    return $html;
+}
