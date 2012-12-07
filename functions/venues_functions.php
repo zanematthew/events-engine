@@ -141,6 +141,11 @@ Class Venues extends zMCustomPostTypeBase {
         return $query;
     }
 
+    public function scheduleCount( $venues_id=null ){
+        $count = Venues::getSchedule( $venues_id );
+        print $count->post_count;
+    }
+
     /**
      * Return a drop down of local tracks
      *
@@ -623,6 +628,10 @@ Class Venues extends zMCustomPostTypeBase {
 
         if ( $size == 'medium' ){
             $url = $staticmap_url . '&zoom=18&size=460x300';
+        }
+
+        if ( $size == 'wide' ){
+            $url = $staticmap_url . '&zoom=18&size=640x640';
         }
 
         print '<img src="'.$url.'" />';
