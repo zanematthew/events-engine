@@ -95,7 +95,7 @@ function zm_ev_get_tax_term( $tax=array() ){
  * @subpackage Makes use of the zM Geo Location to derive the directions
  * link.
  */
-function zm_ev_venue_info_pane( $post_id=null ){
+function zm_ev_venue_address_pane( $post_id=null ){
 
     global $post_type;
 
@@ -113,30 +113,51 @@ function zm_ev_venue_info_pane( $post_id=null ){
     }
 
     ?>
-    <div class="venue-info">
+    <div class="venues-address-pane">
     <div class="content">
         <h3><?php print Venues::getAttribute( array( 'key' => 'title', 'venue_id' => $venue_id, 'echo' => true ) ); ?></h3>
         <?php Venues::getAttribute( array( 'key' => 'street', 'echo' => true ) ); ?>
         <br /><?php Venues::getAttribute( array( 'key' => 'city', 'echo' => true ) ); ?>,
         <?php Venues::getAttribute( array( 'key' => 'state', 'echo' => true ) ); ?>
-        <span id="zm_ev_venue_zip"><?php Venues::getAttribute( array( 'key' => 'zip', 'echo' => true ) ); ?></span>
-        <ul class="inline meta-navigation">
-            <li><a href="<?php print Venues::getAttribute( array( 'key' => 'website' ) ); ?>" target="_blank">Website</a><span class="bar">|</span></li>
+        <?php Venues::getAttribute( array( 'key' => 'zip', 'echo' => true ) ); ?>
+    </div>
+</div><?php }
+
+function zm_ev_venue_links_pane( $post_id=null ){
+
+    global $post_type;
+
+    if ( $post_type == 'events' ){
+        $venue_id = Events::getVenueId( $post_id );
+    } else {
+        $venue_id = $post_id;
+    }
+
+    if ( get_option('zm_geo_location_version' ) ){
+        $location = zm_geo_location_get();
+        $directions = '<li><a href="https://maps.google.com/maps?saddr='.$location['city'].','.$location['region_full'].'&daddr='.Venues::getAttribute( array( 'key' => 'LatLong' ) ).'"target="_blank">Directions</a></li>';
+    } else {
+        $directions = null;
+    }
+
+    ?>
+    <div class="venue-links-pane">
+        <ul>
+            <li><a href="<?php print Venues::getAttribute( array( 'key' => 'website' ) ); ?>" target="_blank">Website</a></li>
             <?php print $directions; ?>
-            <li><?php print Events::getTrackLink( $post_id, 'Venue' ); ?>
+            <li><?php print Events::getTrackLink( $post_id, 'Events' ); ?>
             <span class="count">
-                (<?php if ( Venues::getSchedule( $venue_id ) ) {
+                <?php if ( Venues::getSchedule( $venue_id ) ) {
                     print Venues::getSchedule( $venue_id )->post_count;
                 } else {
                     print 0;
                 }
-                ?>)
+                ?>
             </span>
             </li>
         </ul>
-    </div>
-</div><?php }
 
+</div><?php }
 
 global $_zm_setting_fields;
 function adminInit(){

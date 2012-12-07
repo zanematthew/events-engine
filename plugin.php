@@ -19,7 +19,6 @@ define( 'ZM_EV_OPTION', 'zm_ev_version' );
  * execution of this plugin, returning.
  */
 if ( ! get_option('zm_easy_cpt_version' ) ){
-    // Damn, lambda's would be sooo n1ce about now.
     function zm_ev_admin_notice(){
         echo '<div class="updated"><p>This plugin requires <strong>zM Easy Custom Post Types</strong>.</p></div>';
     }
