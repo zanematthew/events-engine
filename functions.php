@@ -98,6 +98,7 @@ function zm_ev_get_tax_term( $tax=array() ){
 function zm_ev_venue_address_pane( $post_id=null ){
 
     global $post_type;
+    $venues = New Venues;
 
     if ( $post_type == 'events' ){
         $venue_id = Events::getVenueId( $post_id );
@@ -107,7 +108,15 @@ function zm_ev_venue_address_pane( $post_id=null ){
 
     if ( get_option('zm_geo_location_version' ) ){
         $location = zm_geo_location_get();
-        $directions = '<li><a href="https://maps.google.com/maps?saddr='.$location['city'].','.$location['region_full'].'&daddr='.Venues::getAttribute( array( 'key' => 'LatLong' ) ).'"target="_blank">Directions</a><span class="bar">|</span></li>';
+
+        $street = $venues->getAttribute( array( 'key' => 'street' ) );
+        $city = $venues->getAttribute( array( 'key' => 'city' ) );
+        $state = $venues->getAttribute( array( 'key' => 'state' ) );
+        $zip = $venues->getAttribute( array( 'key' => 'zip' ) );
+
+        $destination = "{$street} {$city}, {$state} {$zip}";
+
+        $directions = '<a href="https://maps.google.com/maps?saddr='.$location['city'].','.$location['region_full'].'&daddr='.$destination.'"target="_blank">Directions</a>';
     } else {
         $directions = null;
     }
@@ -115,11 +124,13 @@ function zm_ev_venue_address_pane( $post_id=null ){
     ?>
     <div class="venues-address-pane">
     <div class="content">
-        <h3><?php print Venues::getAttribute( array( 'key' => 'title', 'venue_id' => $venue_id, 'echo' => true ) ); ?></h3>
-        <?php Venues::getAttribute( array( 'key' => 'street', 'echo' => true ) ); ?>
-        <br /><?php Venues::getAttribute( array( 'key' => 'city', 'echo' => true ) ); ?>,
-        <?php Venues::getAttribute( array( 'key' => 'state', 'echo' => true ) ); ?>
-        <?php Venues::getAttribute( array( 'key' => 'zip', 'echo' => true ) ); ?>
+        <h3><?php print $venues->getAttribute( array( 'key' => 'title', 'venue_id' => $venue_id, 'echo' => true ) ); ?></h3>
+        <?php $venues->getAttribute( array( 'key' => 'street', 'echo' => true ) ); ?>
+        <br /><?php $venues->getAttribute( array( 'key' => 'city', 'echo' => true ) ); ?>,
+        <?php $venues->getAttribute( array( 'key' => 'state', 'echo' => true ) ); ?>
+        <?php $venues->getAttribute( array( 'key' => 'zip', 'echo' => true ) ); ?>
+        <br />
+        <?php print $directions; ?>
     </div>
 </div><?php }
 
@@ -135,7 +146,7 @@ function zm_ev_venue_links_pane( $post_id=null ){
 
     if ( get_option('zm_geo_location_version' ) ){
         $location = zm_geo_location_get();
-        $directions = '<li><a href="https://maps.google.com/maps?saddr='.$location['city'].','.$location['region_full'].'&daddr='.Venues::getAttribute( array( 'key' => 'LatLong' ) ).'"target="_blank">Directions</a></li>';
+        $directions = '<a href="https://maps.google.com/maps?saddr='.$location['city'].','.$location['region_full'].'&daddr='.Venues::getAttribute( array( 'key' => 'LatLong' ) ).'"target="_blank">Directions</a>';
     } else {
         $directions = null;
     }
@@ -143,9 +154,9 @@ function zm_ev_venue_links_pane( $post_id=null ){
     ?>
     <div class="venue-links-pane">
         <ul>
-            <li><a href="<?php print Venues::getAttribute( array( 'key' => 'website' ) ); ?>" target="_blank">Website</a></li>
-            <?php print $directions; ?>
-            <li><?php print Events::getTrackLink( $post_id, 'Events' ); ?>
+            <li class="website"><a href="<?php print Venues::getAttribute( array( 'key' => 'website' ) ); ?>" target="_blank">Website</a></li>
+            <li class="directions"><?php print $directions; ?></li>
+            <li class="venue"><?php print Events::getTrackLink( $post_id, 'Venue' ); ?>
             <span class="count">
                 <?php if ( Venues::getSchedule( $venue_id ) ) {
                     print Venues::getSchedule( $venue_id )->post_count;

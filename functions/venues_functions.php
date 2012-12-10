@@ -143,7 +143,11 @@ Class Venues extends zMCustomPostTypeBase {
 
     public function scheduleCount( $venues_id=null ){
         $count = Venues::getSchedule( $venues_id );
-        print $count->post_count;
+        if ( $count )
+            $html = $count->post_count;
+        else
+            $html = 0;
+        print '<span class="count">' . $html . '</span>';
     }
 
     /**
