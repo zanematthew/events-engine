@@ -374,7 +374,7 @@ Class Venues extends zMCustomPostTypeBase {
             $schedule = $new_schedule;
         }
 
-        update_post_meta( $venues_id, 'events_id', $schedule );
+        return update_post_meta( $venues_id, 'events_id', $schedule );
     }
 
     /**

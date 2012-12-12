@@ -255,6 +255,7 @@ class Events extends zMCustomPostTypeBase {
         die();
     } // End 'postTypeSubmit'
 
+
     /**
      * Updates the 'utiltily', i.e. taxonomies and date.
      *
@@ -620,12 +621,13 @@ class Events extends zMCustomPostTypeBase {
      * @todo Narrow down results to show from today on
      * @todo $end_date support
      */
-    public function getMonth( $start_date=null, $end_date=null ){
+    public function getMonth( $start_date=null, $end_date=null, $type=null, $limit=5 ){
 
         if ( is_null( $start_date ) ){
             $date = date('Y-n');
         } else {
-            $date = date( 'Y-n', strtotime( $start_date ) );
+            // $date = date( 'Y-n', strtotime( $start_date ) );
+            $date = $start_date;
         }
 
         global $wpdb;
@@ -651,14 +653,27 @@ class Events extends zMCustomPostTypeBase {
             'post_type' => 'events',
             'post_status' => 'publish',
             'post__in' => $event_ids,
-            'posts_per_page' => -1,
+            'posts_per_page' => 5,
             'order' => 'ASC',
             'orderby' => 'events_start-date',
             'meta_key' => 'events_start-date'
             );
 
+        if ( ! empty( $type ) ){
+            $tax_query = array(
+                array(
+                    'taxonomy' => 'type',
+                    'field' => 'slug',
+                    'terms' => $type
+                    )
+                );
+
+            $args['tax_query'] = $tax_query;
+        }
+
         $events = new WP_Query( $args );
 
+        $tmp['date']  = $date;
         $tmp['items'] = $events->posts;
         $tmp['count'] = $events->post_count;
         return $tmp;

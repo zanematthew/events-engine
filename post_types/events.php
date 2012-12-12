@@ -41,7 +41,8 @@ $event->taxonomy = array(
         'name' => 'events_tag',
         'post_type' => 'events',
         'menu_name' => 'Tags',
-        'slug' => 'events-tags'
+        'slug' => 'events-tags',
+        'hierarchical' => false
         ),
     array(
         'name' => 'Attendees',
