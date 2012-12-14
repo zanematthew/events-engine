@@ -85,7 +85,6 @@ Class Venues extends zMCustomPostTypeBase {
          * register_taxonomy and many other usefullness.
          */
         parent::__construct();
-
     }
 
     /**
@@ -237,6 +236,8 @@ Class Venues extends zMCustomPostTypeBase {
         if ( is_null( $abbr ) )
             die('need abbr');
 
+        $abbr = strtoupper( $abbr );
+
         $state_list = array(
             'AL'=>"Alabama",
             'AK'=>"Alaska",
@@ -290,7 +291,7 @@ Class Venues extends zMCustomPostTypeBase {
             'WI'=>"Wisconsin",
             'WY'=>"Wyoming"
             );
-        if(!empty($state_list[$abbr])) {
+        if ( ! empty( $state_list[$abbr] ) ) {
             $state_name = $state_list[$abbr];
         } else {
             $state_name = "Unknown";

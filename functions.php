@@ -29,6 +29,7 @@ function zm_ev_admin_scripts( $hook ){
 }
 add_action( 'admin_enqueue_scripts', 'zm_ev_admin_scripts' );
 
+
 function zm_ee_comment_class( $post_id=null ){
 
     $comments_count = wp_count_comments( $post_id );
@@ -43,6 +44,7 @@ function zm_ee_comment_class( $post_id=null ){
 
     print $comment_class;
 }
+
 
 function zm_ee_format_date( $post_id=null, $both=true, $echo=true ) {
 
@@ -61,6 +63,7 @@ function zm_ee_format_date( $post_id=null, $both=true, $echo=true ) {
 
     if ( $echo ) print $date; else return $date;
 }
+
 
 function zm_ev_get_tax_term( $tax=array() ){
 
@@ -133,6 +136,7 @@ function zm_ev_venue_address_pane( $post_id=null ){
     </div>
 </div><?php }
 
+
 function zm_ev_venue_links_pane( $post_id=null ){
 
     global $post_type;
@@ -166,45 +170,7 @@ function zm_ev_venue_links_pane( $post_id=null ){
             </span>
             </li>
         </ul>
-
 </div><?php }
-
-global $_zm_setting_fields;
-function adminInit(){
-
-    global $_zm_setting_fields;
-
-    // if ( get_option('zm_gmaps_version') ) {
-    //     $fields[] = 'zm_gmaps_api_key';
-    // }
-    if ( ! is_null( $_zm_setting_fields ) ){
-        foreach( $_zm_setting_fields as $field ) {
-            register_setting('wpmc_plugin_options', $field );
-        }
-    }
-}
-add_action( 'admin_init', 'adminInit',99 );
-
-function adminMenu(){
-    $permission = 'manage_options';
-    add_submenu_page( 'edit.php?post_type=events', __('Settings', 'bmx_re'), __('Settings', 'bmx_re'),  $permission, 'wpmc_settings', 'demo_callback' );
-}
-add_action( 'admin_menu', 'adminMenu' );
-
-function demo_callback(){?>
-    <div class="wrap">
-        <h2>Settings</h2>
-        <form action="options.php" method="post" class="row-container">
-            <?php settings_fields('wpmc_plugin_options'); ?>
-            <?php do_action('zm_social_settings'); ?>
-            <?php do_action('zm_gmaps_settings'); ?>
-            <?php do_action('zm_weather_settings'); ?>
-            <div class="button-container">
-                <input name="Submit" type="submit" class="button " value="<?php esc_attr_e('Save Changes'); ?>" />
-            </div>
-        </form>
-    </div>
-<?php }
 
 
 /**
@@ -237,15 +203,16 @@ function zm_event_date( $post_id=null, $both=true ){
     print $date;
 }
 
-add_filter( 'manage_edit-events_columns', 'set_custom_edit_book_columns' );
-function set_custom_edit_book_columns($columns) {
+
+function zm_ev_events_custom_header($columns) {
     return $columns
          + array('events_start-date' => __('Start Date'),
                  'events_end-date' => __('End Date'));
 }
+add_filter( 'manage_edit-events_columns', 'zm_ev_events_custom_header' );
 
-add_action( 'manage_events_posts_custom_column' , 'custom_book_column', 10, 2 );
-function custom_book_column( $column, $post_id ) {
+
+function zm_ev_events_custom_column_content( $column, $post_id ) {
     switch ( $column ) {
       case 'events_start-date':
         echo get_post_meta( $post_id , 'events_start-date' , true );
@@ -256,6 +223,7 @@ function custom_book_column( $column, $post_id ) {
         break;
     }
 }
+add_action( 'manage_events_posts_custom_column' , 'zm_ev_events_custom_column_content', 10, 2 );
 
 
 function zm_ev_js_var_setup(){

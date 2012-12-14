@@ -28,6 +28,7 @@ if ( ! get_option('zm_easy_cpt_version' ) ){
 
 
 require_once 'functions.php';
+require_once 'admin-page-settings.php';
 
 
 /**
@@ -35,6 +36,7 @@ require_once 'functions.php';
  * and enqueue our admin and front end asset files.
  */
 require_once plugin_dir_path( __FILE__ ) . '../zm-easy-cpt/plugin.php';
+if ( ! function_exists( 'zm_easy_cpt_reqiure' ) ) return;
 zm_easy_cpt_reqiure( plugin_dir_path(__FILE__) );
 
 
