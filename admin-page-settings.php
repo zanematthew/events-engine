@@ -1,18 +1,5 @@
 <?php
 
-global $_zm_setting_fields;
-function adminInit(){
-
-    global $_zm_setting_fields;
-
-    if ( ! is_null( $_zm_setting_fields ) ){
-        foreach( $_zm_setting_fields as $field ) {
-            register_setting('wpmc_plugin_options', $field );
-        }
-    }
-}
-add_action( 'admin_init', 'adminInit',99 );
-
 function adminMenu(){
     $permission = 'manage_options';
     add_submenu_page( 'edit.php?post_type=events', __('Settings', 'bmx_re'), __('Settings', 'bmx_re'),  $permission, 'wpmc_settings', 'demo_callback' );
@@ -65,6 +52,18 @@ add_action('admin_menu','zm_ev_settings_menu');
  */
 function zm_ev_settings_page(){?>
     <style type="text/css">
+    .zm-ev-settings-container fieldset {
+        border: 1px solid #ECECEC;
+        float: left;
+        padding: 10px;
+        margin: 0 15px 15px 0;
+        border-radius: 4px;
+        }
+
+    .zm-ev-settings-container legend {
+        font-weight: 300;
+        }
+
     .zm-ev-settings-container fieldset p {
         float: left;
         width: 400px;
@@ -74,7 +73,7 @@ function zm_ev_settings_page(){?>
 
     .zm-ev-settings-container label {
         width: 85px;
-        line-height: 25px;
+        line-height: 20px;
         float: left;
         }
 
@@ -113,21 +112,8 @@ function zm_ev_settings_page(){?>
     <div class="zm-ev-settings-container">
         <h1><?php _e('Events &amp; Venues Settings', 'zm_ev'); ?></h1>
         <form action="#" method="POST" id="zm_ev_settings_form">
-
-Settings to convert:<br />
-zm_social_setting<br />
-zm_gmaps_settings<br />
-zm_weather_setting<br />
-zm_json<br />
-<?php
-// do_action('zm_social_settings');
-// do_action('zm_gmaps_settings');
-// do_action('zm_weather_settings');
-// do_action('zm_json');
-?>
-
-        <?php do_action('zm_eve_before_settings'); ?>
-        <?php do_action('zm_eve_after_settings'); ?>
+        <?php do_action('zm_ev_before_settings'); ?>
+        <?php do_action('zm_ev_after_settings'); ?>
         </form>
     </div>
 <?php }
