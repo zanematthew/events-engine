@@ -24,10 +24,6 @@ function demo_callback(){?>
         <h2>Settings</h2>
         <form action="options.php" method="post" class="row-container">
             <?php settings_fields('wpmc_plugin_options'); ?>
-            <?php do_action('zm_social_settings'); ?>
-            <?php do_action('zm_gmaps_settings'); ?>
-            <?php do_action('zm_weather_settings'); ?>
-            <?php do_action('zm_json'); ?>
             <div class="button-container">
                 <input name="Submit" type="submit" class="button " value="<?php esc_attr_e('Save Changes'); ?>" />
             </div>
@@ -117,6 +113,19 @@ function zm_ev_settings_page(){?>
     <div class="zm-ev-settings-container">
         <h1><?php _e('Events &amp; Venues Settings', 'zm_ev'); ?></h1>
         <form action="#" method="POST" id="zm_ev_settings_form">
+
+Settings to convert:<br />
+zm_social_setting<br />
+zm_gmaps_settings<br />
+zm_weather_setting<br />
+zm_json<br />
+<?php
+// do_action('zm_social_settings');
+// do_action('zm_gmaps_settings');
+// do_action('zm_weather_settings');
+// do_action('zm_json');
+?>
+
         <?php do_action('zm_eve_before_settings'); ?>
         <?php do_action('zm_eve_after_settings'); ?>
         </form>
