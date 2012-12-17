@@ -260,3 +260,33 @@ function zm_ev_init(){
     add_action( 'wp_print_scripts', 'zm_ev_js_var_setup' );
 }
 add_action('init','zm_ev_init');
+
+function zm_ev_settings(){
+    if ( ! is_user_logged_in() ) return;
+    global $current_user;
+    ?><a href="<?php print site_url(); ?>/attendees/<?php print $current_user->user_login; ?>/settings/" class="zm-ev-settings-icon">Settings</a>
+<?php }
+
+/**
+ * Save the settings, note this is called via ajax!
+ */
+function zm_ev_save_user_settings(){
+
+    if ( empty( $_POST ) )
+        return;
+
+    global $current_user;
+    get_currentuserinfo();
+
+    if ( empty( $_POST['value'] ) ){
+        print delete_user_meta( $current_user->ID, 'zm_' . $_POST['name'] . '_preference', $_POST['value'] );
+    } else {
+        if ( $_POST['name'] == 'user_email' ){
+            print wp_update_user( array( 'ID' => $current_user->ID, 'zm_' . $_POST['name'] . '_preference' => $_POST['value'] ) );
+        }
+        print update_user_meta( $current_user->ID, 'zm_' . $_POST['name'] . '_preference', $_POST['value'] );
+    }
+    die();
+}
+add_action( 'wp_ajax_zm_ev_save_user_settings', 'zm_ev_save_user_settings' );
+add_action( 'wp_ajax_nopriv_zm_ev_save_user_settings', 'zm_ev_save_user_settings');

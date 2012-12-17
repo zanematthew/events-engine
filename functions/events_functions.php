@@ -406,13 +406,9 @@ class Events extends zMCustomPostTypeBase {
         }
     }
 
-    public function getTrackTitle( $event_id=null ){
-
-        $track_id = get_post_meta( $event_id, 'venues_id', true );
-
-        $post = get_post( $track_id );
-        if ( $post )
-            print $post->post_title;
+    public function getVenueTitle( $event_id=null ){
+        $post = get_post( get_post_meta( $event_id, 'venues_id', true ) );
+        return $post->post_title;
     }
 
     public function getTags( $event_id=null ){
@@ -552,7 +548,6 @@ class Events extends zMCustomPostTypeBase {
         die('here');
     }
 
-
     /**
      * @todo Narrow down results to show from today on
      * @todo $end_date support
@@ -615,7 +610,6 @@ class Events extends zMCustomPostTypeBase {
         return $tmp;
     }
 
-
     public function beforeDeletePost( $postid ){
 
         global $post_type;
@@ -626,6 +620,19 @@ class Events extends zMCustomPostTypeBase {
         $venues = New Venues;
 
         $venues->removeEventFromSchedule( $venues_id, $events_id );
-
     }
+
+    public function typeSelectBox( $default='-- Event Type --' ){
+
+        $args = array(
+            'extra_data' => 'data-allows-new-values="true"',
+            'extra_class' => 'chzn-select',
+            'taxonomy' => 'type',
+            'label' => 'Type',
+            'default' => $default
+        );
+
+        zm_base_build_options( $args );
+    }
+
 } // End 'CustomPostType'

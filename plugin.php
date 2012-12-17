@@ -27,6 +27,7 @@ if ( ! get_option('zm_easy_cpt_version' ) ){
 }
 
 
+require_once 'template-redirect.php';
 require_once 'functions.php';
 require_once 'admin-page-settings.php';
 

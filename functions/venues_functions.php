@@ -11,7 +11,7 @@ Class Venues extends zMCustomPostTypeBase {
      * but should be tracks
      */
     public $cpt;
-    public static $state_list = array(
+    public $state_list = array(
             'AL'=>"Alabama",
             'AK'=>"Alaska",
             'AZ'=>"Arizona",
@@ -164,8 +164,7 @@ Class Venues extends zMCustomPostTypeBase {
             )
         );
 
-        $html = null;
-
+        $html = '<option>-- Choose a Venue --</option>';
         foreach( $query->posts as $posts ) {
             $html .= '<option value="'.$posts->ID.'" '.selected($current_id, $posts->ID, false).'>' . $posts->post_title.'</optoin>';
         }
@@ -641,4 +640,35 @@ Class Venues extends zMCustomPostTypeBase {
 
         print '<img src="'.$url.'" />';
     }
+
+    public function stateSelect( $current=null ){
+
+        if ( empty( $extra_data ) )
+            $extra_data = null;
+
+        if ( empty( $extra_class ) )
+            $extra_class = null;
+
+        if ( ! empty( $multiple ) ) {
+            $multiple = 'multiple="multiple"';
+        } else {
+            $multiple = false;
+        }
+
+        if ( empty( $default ) ){
+            $default = '-- Select a State --';
+        }
+
+        $states = $this->state_list;
+    ?>
+    <fieldset class="zm-ev-state-container">
+    <label class="zm-base-title">State</label>
+    <select name="state<?php if ( $multiple=='multiple="multiple"') print '[]'; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
+        <option><?php print $default; ?></option>
+        <?php foreach( $states as $abbr => $name ) : ?>
+            <option <?php selected( $name, $current ); ?>><?php print $name; ?></option>
+        <?php endforeach; ?>
+    </select>
+    </fieldset>
+    <?php }
 }
