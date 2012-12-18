@@ -1,23 +1,4 @@
 <?php
-
-function adminMenu(){
-    $permission = 'manage_options';
-    add_submenu_page( 'edit.php?post_type=events', __('Settings', 'bmx_re'), __('Settings', 'bmx_re'),  $permission, 'wpmc_settings', 'demo_callback' );
-}
-add_action( 'admin_menu', 'adminMenu' );
-
-function demo_callback(){?>
-    <div class="wrap">
-        <h2>Settings</h2>
-        <form action="options.php" method="post" class="row-container">
-            <?php settings_fields('wpmc_plugin_options'); ?>
-            <div class="button-container">
-                <input name="Submit" type="submit" class="button " value="<?php esc_attr_e('Save Changes'); ?>" />
-            </div>
-        </form>
-    </div>
-<?php }
-
 /**
  * Save the settings, note this is called via ajax!
  */
@@ -112,6 +93,11 @@ function zm_ev_settings_page(){?>
     <div class="zm-ev-settings-container">
         <h1><?php _e('Events &amp; Venues Settings', 'zm_ev'); ?></h1>
         <form action="#" method="POST" id="zm_ev_settings_form">
+        <fieldset>
+            <legend>General Settings</legend>
+            <label>Google Analytics</label>
+            <input type="text" name="zm_ev_google_anaylitcs_code" value="<?php print get_option('zm_ev_google_anaylitcs_code'); ?>" />
+        </fieldset>
         <?php do_action('zm_ev_before_settings'); ?>
         <?php do_action('zm_ev_after_settings'); ?>
         </form>

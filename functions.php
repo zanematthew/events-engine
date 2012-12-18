@@ -290,3 +290,29 @@ function zm_ev_save_user_settings(){
 }
 add_action( 'wp_ajax_zm_ev_save_user_settings', 'zm_ev_save_user_settings' );
 add_action( 'wp_ajax_nopriv_zm_ev_save_user_settings', 'zm_ev_save_user_settings');
+
+function zm_ev_ga_code(){
+
+    $localhosts = array(
+        '127.0.0.1',
+        'localhost'
+        );
+
+    if ( in_array( $_SERVER['REMOTE_ADDR'], $localhosts ) ) : ?>
+        <!-- zM Google Analytics disabled for localhost: <?php print $_SERVER['REMOTE_ADDR']; ?> -->
+    <?php else : ?>
+        $zm_ev_google_anaylitcs_code = get_option('zm_ev_google_anaylitcs_code'); ?>
+        <script type="text/javascript">
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', '<?print $zm_ev_google_anaylitcs_code; ?>']);
+          _gaq.push(['_trackPageview']);
+
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+        </script>
+    <?php endif; ?>
+<?php }
+add_action( 'wp_footer', 'zm_ev_ga_code' );
