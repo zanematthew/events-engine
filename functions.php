@@ -298,9 +298,9 @@ function zm_ev_ga_code(){
         'localhost'
         );
 
-    if ( in_array( $_SERVER['REMOTE_ADDR'], $localhosts ) ) : ?>
-        <!-- zM Google Analytics disabled for localhost: <?php print $_SERVER['REMOTE_ADDR']; ?> -->
-    <?php else : ?>
+    if ( in_array( $_SERVER['REMOTE_ADDR'], $localhosts ) ) {
+        print '<!-- zM Google Analytics disabled for localhost: ' . $_SERVER['REMOTE_ADDR'] . '-->';
+    } else {
         $zm_ev_google_anaylitcs_code = get_option('zm_ev_google_anaylitcs_code'); ?>
         <script type="text/javascript">
           var _gaq = _gaq || [];
@@ -313,6 +313,6 @@ function zm_ev_ga_code(){
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
-    <?php endif; ?>
-<?php }
+    <?php }
+}
 add_action( 'wp_footer', 'zm_ev_ga_code' );
