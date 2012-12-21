@@ -25,10 +25,11 @@ class Events extends zMCustomPostTypeBase {
 
         if ( is_admin() ){
             add_action( 'add_meta_boxes', array( &$this, 'locationMetaField' ) );
-            // add_action( 'date_save', array( &$this, 'eventDateSave') );
             add_action( 'save_post', array( &$this, 'myplugin_save_postdata' ) );
-
             add_action( 'wp_ajax_feedPreviewNew', array( &$this, 'feedPreviewNew' ) );
+
+            add_filter( 'manage_edit-events_columns', array( &$this, 'customHeader' ) );
+            add_action( 'manage_events_posts_custom_column' , array( &$this, 'customContent' ), 10, 2 );
         }
 
         register_activation_hook( __FILE__, array( &$this, 'registerActivation') );
@@ -37,19 +38,6 @@ class Events extends zMCustomPostTypeBase {
         add_action( 'wp_ajax_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
 
         add_action( 'before_delete_post', array( &$this, 'beforeDeletePost') );
-    }
-
-    public function adminJsCss(){
-
-        if ( isset( $_GET['post_type'] ) ){
-            $post_type = $_GET['post_type'];
-        } else {
-            global $post_type;
-        }
-
-        if ( $this->my_cpt != $post_type ){
-            return;
-        }
     }
 
     /**
@@ -451,7 +439,6 @@ class Events extends zMCustomPostTypeBase {
         return update_post_meta( $post_id, '_zm_attachement_id', $attachment_id );
     }
 
-
     /**
      * Add or Update the Events Entry fee. note our post type "events" is
      * ALWAYS derived!.
@@ -507,11 +494,6 @@ class Events extends zMCustomPostTypeBase {
         return false;
     }
 
-    /**
-     * @todo Class Attachment
-     */
-    public function getAttachmentImageURI(){}
-
     public function getDate( $event_id=null ){
 
         if ( is_null( $event_id ) ){
@@ -519,33 +501,6 @@ class Events extends zMCustomPostTypeBase {
             $event_id = $post->ID;
         }
         return get_post_meta( $event_id, 'events_start-date', true );
-    }
-
-    public function adminMenu(){
-        $permission = 'manage_options';
-        add_submenu_page( 'edit.php?post_type='.$this->my_cpt, __('Settings', 'bmx_re'), __('Settings', 'bmx_re'),  $permission, $this->my_cpt.'_settings', function(){
-        print '<div class="wrap">
-            <h2>Feeds</h2>
-            <p>
-                <a href="#" class="button preview-events-feed-handle">Preview New Feed</a>
-                <a href="#" class="button create-events-feed-handle">Create New Feed</a>
-            </p>
-            <div class="events-feed-target"></div>
-            <h3>Current Feed Link</h3>
-            <a href="#">http://bmxraceschedules.dev/races/events.json</a>
-            <h3>Current Feed as Array</h3>
-            <pre>
-                ' . print_r( json_decode( file_get_contents( '/opt/local/apache2/htdocs/bmxraceschedules/html/races/events.json' ) ) ) . '</pre>
-                Preview Current Feed<br />
-                Preview New Feed<br />
-                Create Feed<br />
-        </div>';
-        });
-    }
-
-    public function feedPreviewNew(){
-        Events::events();
-        die('here');
     }
 
     /**
@@ -634,5 +589,25 @@ class Events extends zMCustomPostTypeBase {
 
         zm_base_build_options( $args );
     }
+
+    public function customHeader($columns) {
+        return $columns
+             + array('events_start-date' => __('Start Date'),
+                     'events_end-date' => __('End Date'));
+    }
+
+
+    public function customContent( $column, $post_id ) {
+        switch ( $column ) {
+          case 'events_start-date':
+            echo get_post_meta( $post_id , 'events_start-date' , true );
+            break;
+
+          case 'events_end-date':
+            echo get_post_meta( $post_id , 'events_end-date' , true );
+            break;
+        }
+    }
+
 
 } // End 'CustomPostType'

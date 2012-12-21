@@ -8,10 +8,8 @@
  * Author URI: http://zanematthew.com/
  * License: GP
  */
-
 define( 'ZM_EV_VERSION', '1' );
 define( 'ZM_EV_OPTION', 'zm_ev_version' );
-
 
 /**
  * Check if zM Easy Custom Post Types is installed. If it
@@ -26,11 +24,9 @@ if ( ! get_option('zm_easy_cpt_version' ) ){
     return;
 }
 
-
-require_once 'template-redirect.php';
+require_once 'my-admin-functions.php';
 require_once 'functions.php';
-require_once 'admin-page-settings.php';
-
+require_once 'template-tags.php';
 
 /**
  * Auto load our events.php, events_controller.php, etc.
@@ -39,8 +35,6 @@ require_once 'admin-page-settings.php';
 require_once plugin_dir_path( __FILE__ ) . '../zm-easy-cpt/plugin.php';
 if ( ! function_exists( 'zm_easy_cpt_reqiure' ) ) return;
 zm_easy_cpt_reqiure( plugin_dir_path(__FILE__) );
-
-
 
 /**
  * Add the version number to the options table when
@@ -63,7 +57,6 @@ function zm_ev_activation() {
     do_action( 'zm_easy_cpt_create_assets', array('events', 'venues'), plugin_dir_path(__FILE__) );
 }
 register_activation_hook( __FILE__, 'zm_ev_activation' );
-
 
 /**
  * When the plugins is deactivated delete our version number from the database.

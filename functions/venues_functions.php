@@ -80,11 +80,12 @@ Class Venues extends zMCustomPostTypeBase {
         // like Venues::someMethod();
         self::$instance = $this;
         $this->cpt = strtolower( __CLASS__ );
-        /**
-         * Our parent construct has the init's for register_post_type
-         * register_taxonomy and many other usefullness.
-         */
         parent::__construct();
+
+        if ( is_admin() ){
+            add_filter( 'manage_edit-'.$this->cpt.'_columns', array( &$this, 'customHeader' ) );
+            add_action( 'manage_'.$this->cpt.'_posts_custom_column' , array( &$this, 'customContent' ), 10, 2 );
+        }
     }
 
     /**
@@ -172,7 +173,7 @@ Class Venues extends zMCustomPostTypeBase {
     }
 
     /**
-     * Retrive the number of Events
+     * Retrive the total number of Events
      *
      * @param $echo Either return the results or print them
      * @return Count of events (or prints)
@@ -614,7 +615,7 @@ Class Venues extends zMCustomPostTypeBase {
         }
     }
 
-    static public function staticMap( $venue_id=null, $size=null ){
+    static public function staticMap( $venue_id=null, $size=null, $echo=true ){
 
         if ( empty( $venue_id ) ){
             global $post;
@@ -638,7 +639,10 @@ Class Venues extends zMCustomPostTypeBase {
             $url = $staticmap_url . '&zoom=18&size=640x640';
         }
 
-        print '<img src="'.$url.'" />';
+        if ( $echo )
+            print '<img src="'.$url.'" />';
+        else
+            return $url;
     }
 
     public function stateSelect( $current=null ){
@@ -671,4 +675,18 @@ Class Venues extends zMCustomPostTypeBase {
     </select>
     </fieldset>
     <?php }
+
+    public function customHeader($columns) {
+        return $columns + array('venues_event_count' => __('Event Count') );
+    }
+
+
+    public function customContent( $column, $post_id ) {
+        switch ( $column ) {
+        case 'venues_event_count':
+            print $this->scheduleCount( $post_id );
+            break;
+        }
+    }
+
 }
