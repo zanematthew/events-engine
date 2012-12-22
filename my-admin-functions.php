@@ -39,13 +39,14 @@ function zm_ev_save_settings(){
 
     $option_value = get_option( $_POST['name'] );
 
-    if ( ! empty( $_POST['value'] ) ){
-        print "saving\n";
-        var_dump( update_option( $_POST['name'], $_POST['value'] ) );
+    if ( empty( $_POST['value'] ) || $_POST['value'] === "false" ){
+            print "removing...";
+            delete_option( $_POST['name'] );
     } else {
-        print "removing";
-        var_dump( delete_option( $_POST['name'] ) );
+            print "updating...\n";
+            update_option( $_POST['name'], $_POST['value'] );
     }
+
     die();
 }
 add_action( 'wp_ajax_zm_ev_save_settings', 'zm_ev_save_settings' );
@@ -128,7 +129,6 @@ function zm_ev_settings_page(){?>
         }
 
         $('#zm_ev_settings_form input[type="checkbox"]').on('change', function(){
-            console.log( $(this).attr('name') );
             zm_json_save_setting( $(this) );
         });
 
