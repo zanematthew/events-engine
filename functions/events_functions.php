@@ -330,7 +330,9 @@ class Events extends zMCustomPostTypeBase {
             __( 'Venue', 'myplugin_textdomain' ),
             function(){
                 global $post;
-                print Venues::locationDropDown( Events::getVenueId( $post->ID ) ) . '&nbsp;&nbsp;<a href="' . admin_url() . 'post.php?post='.Events::getVenueId( $post->ID ).'&action=edit">Edit this Venue</a>';
+                $venues_id = Events::getVenueId( $post->ID );
+                print Venues::locationDropDown( $venues_id );
+                if ( ! empty( $venues_id ) ) print '<a href="' . admin_url() . 'post.php?post='.$venues_id.'&action=edit">Edit this Venue</a>';
             },
             $this->my_cpt
         );
@@ -414,7 +416,7 @@ class Events extends zMCustomPostTypeBase {
         if ( ! empty( $type ) && isset( $type[0] ) )
             $type = $type[0];
         else
-            $type = '&ndash;';
+            $type = false;
 
         return $type;
     }

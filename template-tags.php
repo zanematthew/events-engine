@@ -114,3 +114,33 @@ function zm_ev_venue_address_pane( $post_id=null ){
         <?php print $directions; ?>
     </div>
 </div><?php }
+
+/**
+ * Gets the custom date for an Event given the current $post->ID.
+ *
+ * Either returns the date from the $prefix_postmeta table
+ * for a single event OR for Events that span multiple dates
+ * will return start date and end date.
+ *
+ * @param $post_id
+ * @param $both bool, display start and end date, or just start date
+ * @uses get_post_custom_values();
+ */
+function zm_event_date( $post_id=null, $both=true ){
+
+    if ( is_null( $post_id ) ) {
+        global $post;
+        $post_id = $post->ID;
+    }
+
+    $start = get_post_meta( $post_id, 'events_start-date', true );
+    $end = get_post_meta( $post_id, 'events_end-date', true );
+
+    if ( $end && $both ){
+        $date = date( 'M j', strtotime( $start ) ) . date( ' - M j, Y', strtotime( $end ) );
+    } else {
+        $date = date( 'M j, Y', strtotime( $start ) );
+    }
+
+    print $date;
+}

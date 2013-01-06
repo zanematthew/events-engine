@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: zM Events Engine
- * Plugin URI: --
- * Description: Used to create custom Events and Venues
+ * Plugin Name: zM Events & Venues Engine
+ * Plugin URI: http://zanematthew.com/blog/events-venues-plugin/
+ * Description: Used to create Events and relate theme with Venues.
  * Version: 1.0.0
  * Author: Zane M. Kolnik
  * Author URI: http://zanematthew.com/
- * License: GP
+ * License: GPL
  */
 define( 'ZM_EV_VERSION', '1' );
 define( 'ZM_EV_OPTION', 'zm_ev_version' );

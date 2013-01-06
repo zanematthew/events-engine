@@ -105,26 +105,19 @@ Class Venues extends zMCustomPostTypeBase {
         if ( empty( $venue_ids ) )
             return false;
 
-        if ( $past ){
-            $args = array(
+        $args = array(
             'post_type' => 'events',
             'post__in' => $venue_ids,
             'posts_per_page' => -1,
             'order' => 'ASC',
             'post_status' => 'publish',
-            'orderby' => 'meta_value',
-            'meta_key' => 'events_start-date'
+            'orderby' => 'meta_value'
             );
+
+        if ( $past ){
+            $args['meta_key'] = 'events_start-date';
         } else {
-            $args = array(
-            'post_type' => 'events',
-            'post__in' => $venue_ids,
-            'posts_per_page' => -1,
-            'order' => 'ASC',
-            'post_status' => 'publish',
-            'orderby' => 'meta_value',
-            'meta_key' => 'events_start-date',
-            'meta_query' => array(
+            $args['meta_query'] = array(
                 'relation' => 'AND',
                     array(
                         'key' => 'events_start-date',
@@ -132,8 +125,7 @@ Class Venues extends zMCustomPostTypeBase {
                         'type' => 'CHAR',
                         'compare' => '>='
                     )
-                )
-            );
+                );
         }
 
         $query = new WP_Query( $args );
@@ -301,25 +293,6 @@ Class Venues extends zMCustomPostTypeBase {
     }
 
     /**
-     * Retrive image from google and save it to assets/map/ dir
-     *
-     * @return file size on success false if not.
-     */
-    public function saveMapImage( $track_id=null, $google_image_url=null, $size=null ){
-        $path =  '/var/www/html/images' . DS . 'maps' . DS . 'staticmap_'.$size.'_' . $track_id . '.png';
-
-        $google_image = file_get_contents( $google_image_url );
-        $my_image = file_put_contents( $path, $google_image );
-
-        return $my_image;
-    }
-
-    public function updateMapImageMeta( $track_id=null, $url=null, $size=null ){
-        return update_post_meta( $track_id, 'tracks_map_'.$size, $url );
-    }
-
-
-    /**
      * Removes an Event from a Venues schedule
      *
      * @param $venues_id (int) The Venues to derive the schedule from.
@@ -383,22 +356,53 @@ Class Venues extends zMCustomPostTypeBase {
      * @param $region = 'maryland'
      * @todo transient
      */
-    public function getVenueByRegion( $region=null ){
+    public function getVenueByRegion( $region=null, $type=null ){
+
+        $args = array(
+            'post_type' => $this->cpt,
+            'posts_per_page' => -1,
+            'post_status' => 'publish',
+            'tax_query' => array(
+                'relation' => 'AND',
+                array(
+                    'taxonomy' => 'region',
+                    'field' => 'slug',
+                    'terms' => $region
+                    )
+                )
+            );
+
+
+        $query = new WP_Query( $args );
+
+        if ( $query->post_count == 0 )
+            return false;
+        else
+            return $query->posts;
+    }
+
+    /**
+     * Returns the ID of all Venues in a given Region (full region)
+     * @param $region = 'maryland'
+     * @todo transient
+     */
+    public function getVenueByCountry( $region=null ){
 
         $args = array(
             'post_type' => $this->cpt,
             'posts_per_page' => -1,
             'post_status' => 'publish',
             'meta_query' => array(
-                array(
-                    'key' => 'venues_state',
-                    'value' => $region,
-                    'compare' => '='
-                    )
-                ),
+                 array(
+                     'key' => 'venues_state',
+                     'value' => $region,
+                     'compare' => '='
+                     )
+                 ),
             'orderby' => 'meta_value',
             'meta_key' => 'venues_state'
             );
+
         $query = new WP_Query( $args );
 
         if ( $query->post_count == 0 )
@@ -414,7 +418,7 @@ Class Venues extends zMCustomPostTypeBase {
      */
     public function getLocalVenues(){
         $location = bmx_rs_get_user_location();
-        return $this->getVenueByRegion( $location['region_full'] );
+        return $this->getVenueByCountry( $location['region_full'] );
     }
 
     /**
@@ -467,7 +471,7 @@ Class Venues extends zMCustomPostTypeBase {
                 $id = $post->ID;
             }
         } else {
-            $id = $venues_id;
+            $id = Events::getVenueId( $venues_id );
         }
 
         switch ( $key ) {
@@ -613,36 +617,6 @@ Class Venues extends zMCustomPostTypeBase {
             if ( $file )
                 print "File created, size: {$file}\n";
         }
-    }
-
-    static public function staticMap( $venue_id=null, $size=null, $echo=true ){
-
-        if ( empty( $venue_id ) ){
-            global $post;
-            $venue_id = $post->ID;
-        }
-
-        $cpt = self::$instance->cpt;
-        $lat_long = get_post_meta( $venue_id, $cpt . '_lat', true ) . ',' . get_post_meta( $venue_id, $cpt . '_long', true );
-
-        $staticmap_url = 'http://maps.googleapis.com/maps/api/staticmap?center=' . $lat_long . '&maptype=satellite&sensor=true&';
-
-        if ( $size == 'small' ){
-            $url = $staticmap_url . '&zoom=17&size=125x82';
-        }
-
-        if ( $size == 'medium' ){
-            $url = $staticmap_url . '&zoom=18&size=460x300';
-        }
-
-        if ( $size == 'wide' ){
-            $url = $staticmap_url . '&zoom=18&size=640x640';
-        }
-
-        if ( $echo )
-            print '<img src="'.$url.'" />';
-        else
-            return $url;
     }
 
     public function stateSelect( $current=null ){

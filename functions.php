@@ -28,7 +28,7 @@ add_action('template_redirect', 'zm_ev_tempalte_redirect', 6);
 
 function zm_ev_init(){
     $dependencies[] = 'jquery';
-    wp_enqueue_script( 'zm-ev-tinymce-script', plugin_dir_url( __FILE__ ) . 'vendor/tinymce/jquery.tinymce.js', $dependencies  );
+    // wp_enqueue_script( 'zm-ev-tinymce-script', plugin_dir_url( __FILE__ ) . 'vendor/tinymce/jquery.tinymce.js', $dependencies  );
     add_action( 'wp_print_scripts', 'zm_ev_js_var_setup' );
 }
 add_action('init','zm_ev_init');
@@ -60,21 +60,6 @@ function zm_ev_js_var_setup(){
     </script>
 <?php }
 
-function zm_ee_comment_class( $post_id=null ){
-
-    $comments_count = wp_count_comments( $post_id );
-
-    if ( $comments_count->total_comments == 1 )
-        $comment_class = 'comment-count';
-
-    elseif ( $comments_count->total_comments > 1 )
-        $comment_class = 'comments-count';
-    else
-        $comment_class = '';
-
-    print $comment_class;
-}
-
 function zm_ev_get_tax_term( $tax=array() ){
 
     if ( ! is_array( $tax ) || is_null( $tax ) )
@@ -98,36 +83,6 @@ function zm_ev_get_tax_term( $tax=array() ){
     } else {
         return '';
     }
-}
-
-/**
- * Gets the custom date for an Event given the current $post->ID.
- *
- * Either returns the date from the $prefix_postmeta table
- * for a single event OR for Events that span multiple dates
- * will return start date and end date.
- *
- * @param $post_id
- * @param $both bool, display start and end date, or just start date
- * @uses get_post_custom_values();
- */
-function zm_event_date( $post_id=null, $both=true ){
-
-    if ( is_null( $post_id ) ) {
-        global $post;
-        $post_id = $post->ID;
-    }
-
-    $start = get_post_meta( $post_id, 'events_start-date', true );
-    $end = get_post_meta( $post_id, 'events_end-date', true );
-
-    if ( $end && $both ){
-        $date = date( 'M j', strtotime( $start ) ) . date( ' - M j, Y', strtotime( $end ) );
-    } else {
-        $date = date( 'M j, Y', strtotime( $start ) );
-    }
-
-    print $date;
 }
 
 /**
