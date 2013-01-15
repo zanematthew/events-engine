@@ -462,16 +462,14 @@ Class Venues extends zMCustomPostTypeBase {
         // If the venues_id is not passed in we assume that are our global
         // post is an Event, therefore we must get the venues_id for the
         // current post.
-        if ( empty( $venues_id ) ){
-            global $post;
+        global $post;
 
-            if ( $post->post_type == 'events' ){
-                $id = Events::getVenueId( $post->ID );
-            } else {
-                $id = $post->ID;
-            }
+        if ( ! empty( $post ) && $post->post_type == 'events' ){
+            $venues_id = Events::getVenueId( $post->ID );
+        } elseif( ! empty( $post ) && $post->post_type == 'venues' ) {
+            $venues_id = $post->ID;
         } else {
-            $id = Events::getVenueId( $venues_id );
+            $venues_id = $venues_id;
         }
 
         switch ( $key ) {
@@ -484,18 +482,18 @@ Class Venues extends zMCustomPostTypeBase {
             case 'zip':
             case 'lat':
             case 'long':
-                $field = get_post_meta( $id, self::$instance->cpt . '_' . $key, true );
+                $field = get_post_meta( $venues_id, self::$instance->cpt . '_' . $key, true );
                 break;
             case 'LatLong':
-                $lat = get_post_meta( $id, 'lat', true );
-                $long = get_post_meta( $id, 'long', true );
+                $lat = get_post_meta( $venues_id, 'lat', true );
+                $long = get_post_meta( $venues_id, 'long', true );
                 $field = $lat . ',' . $long;
                 break;
             case 'title':
-                $field = get_the_title( $id );
+                $field = get_the_title( $venues_id );
                 break;
             case 'region': // Really is "coast"
-                $field = zm_ev_get_tax_term( array( 'post_id' => $id, 'taxonomy' => 'region' ) );
+                $field = zm_ev_get_tax_term( array( 'post_id' => $venues_id, 'taxonomy' => 'region' ) );
                 break;
             default:
                 # code...
