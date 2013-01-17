@@ -40,11 +40,9 @@ function zm_ev_save_settings(){
     $option_value = get_option( $_POST['name'] );
 
     if ( empty( $_POST['value'] ) || $_POST['value'] === "false" ){
-            print "removing...";
-            delete_option( $_POST['name'] );
+        delete_option( $_POST['name'] );
     } else {
-            print "updating...\n";
-            update_option( $_POST['name'], $_POST['value'] );
+        update_option( $_POST['name'], wp_filter_nohtml_kses( $_POST['value'] ) );
     }
 
     die();
