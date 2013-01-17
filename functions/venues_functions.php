@@ -619,6 +619,9 @@ Class Venues extends zMCustomPostTypeBase {
 
     public function stateSelect( $current=null ){
 
+        if ( is_array( $current ) )
+            extract( $current );
+
         if ( empty( $extra_data ) )
             $extra_data = null;
 
@@ -639,10 +642,12 @@ Class Venues extends zMCustomPostTypeBase {
     ?>
     <fieldset class="zm-ev-state-container">
     <label class="zm-base-title">State</label>
-    <select name="state<?php if ( $multiple=='multiple="multiple"') print '[]'; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
+    <select name="state" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
         <option><?php print $default; ?></option>
         <?php foreach( $states as $abbr => $name ) : ?>
-            <option <?php selected( $name, $current ); ?>><?php print $name; ?></option>
+            <option <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $name, $c ); ?><?php endforeach; else : selected( $name, $current ); endif; ?>>
+                <?php print $name; ?>
+            </option>
         <?php endforeach; ?>
     </select>
     </fieldset>
