@@ -144,3 +144,233 @@ function zm_event_date( $post_id=null, $both=true ){
 
     print $date;
 }
+
+// I think we did this before? Check later
+function zm_venues_by_region_tmp( $state_abbr=null ){
+    $args['post_type'] = 'venues';
+    $args['meta_query'] = array(
+        array(
+            'key' => 'venues_state',
+            'value' => $state_abbr,
+            'compare' => 'IN'
+            )
+        );
+
+    /**
+     * Once we have the arguments build we run the query and
+     * build an array of post IDs.
+     */
+    $venues_by_region = New WP_Query( $args );
+    $tmp_venues_ids = array();
+    foreach( $venues_by_region->posts as $venues ){
+        $tmp_venues_ids[] = $venues->ID;
+    }
+
+    unset( $args['meta_query'] );
+    wp_reset_postdata();
+    return $tmp_venues_ids;
+}
+
+function zm_ev_user_state_pref( $state_pref=null ){
+
+    $venues = New Venues;
+    $count = count( $state_pref );
+    $i = 0;
+    $current_user = wp_get_current_user();
+
+    $html = '<div class="row"><div class="padding"><div class="alert alert-success"><strong>States</strong> ';
+    foreach( $state_pref as $state_abbr ) {
+        $state = $venues->stateByAbbreviation( $state_abbr );
+        $html .= "<em>{$state}</em>";
+        $i++;
+        if ( $i != $count ){
+            $html .= ", ";
+        }
+    }
+
+    $html .= '<a href="' . site_url() .'/attendees/' . $current_user->user_login . '/settings/"> Settings</a></div></div></div>';
+    print $html;
+}
+
+function zm_ev_user_venue_pref( $venues_id=null ){
+    $i = 0;
+    $count = count( $venues_id );
+    $current_user = wp_get_current_user();
+    $html = '<div class="row"><div class="padding"><div class="alert alert-success"><strong>Venues</strong> ';
+    foreach( $venues_id as $id ){
+        $html .= get_the_title( $id );
+        $i++;
+        if ( $i != $count ){
+            $html .= ", ";
+        }
+    }
+    $html .= '<a href="' . site_url() .'/attendees/' . $current_user->user_login . '/settings/"> Settings</a></div></div></div>';
+    print $html;
+}
+
+function zm_ev_user_type_pref( $type_ids=null ){
+    $i = 0;
+    $count = count( $type_ids );
+    $current_user = wp_get_current_user();
+    $html = '<div class="row"><div class="padding"><div class="alert alert-success"><strong>types</strong> ';
+
+    foreach( $type_ids as $id ){
+        $terms = get_term_by('id', $id, 'type' );
+        $i++;
+        $html .= $terms->name;
+        if ( $i != $count ){
+            $html .= ", ";
+        }
+    }
+    $html .= '<a href="' . site_url() .'/attendees/' . $current_user->user_login . '/settings/"> Settings</a></div></div></div>';
+    print $html;
+}
+
+function zm_ev_venues_by_user_pref_args( $cpt=null ){
+
+    $current_user = wp_get_current_user();
+    $zm_state_preference = get_user_meta( $current_user->ID, 'zm_state_preference', true );
+    $zm_venues_id_preference = get_user_meta( $current_user->ID, 'zm_venue_preference', true );
+    $zm_type_ids_preference = get_user_meta( $current_user->ID, 'zm_type_preference', true );
+
+    // start our shared arguments
+    $args = array(
+        'post_status' => 'publish',
+        'posts_per_page' => -1
+        );
+
+    if ( $zm_state_preference && $zm_type_ids_preference && $cpt == 'events' ){
+        /**
+         * If we have a state pref. and type pref. and post is Events
+         */
+        $tmp_venues_ids = zm_venues_by_region_tmp( $zm_state_preference );
+        $args['post_type'] = 'events';
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' => 'type',
+                'field' => 'id',
+                'terms' => $zm_type_ids_preference,
+                'operator' => 'IN'
+                )
+            );
+        $args['meta_query'] = array(
+            'relation' => 'AND',
+            array(
+                'key' => 'venues_id',
+                'value' => $tmp_venues_ids,
+                'compare' => 'IN'
+                ),
+            array(
+                'key' => 'events_start-date',
+                'value' => date('Y'),
+                'compare' => '>='
+                )
+            );
+print '<pre>';
+print_r( $args );
+print '</pre>';
+        zm_ev_user_type_pref( $zm_type_ids_preference );
+        zm_ev_user_state_pref( $zm_state_preference );
+    } elseif ( $zm_type_ids_preference && $cpt == 'events' ){
+        $args['post_type'] = 'events';
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' => 'type',
+                'field' => 'id',
+                'terms' => $zm_type_ids_preference
+                )
+            );
+        zm_ev_user_type_pref( $zm_type_ids_preference );
+    } elseif ( $zm_state_preference && $zm_venues_id_preference ) {
+        $tmp_venues_ids = zm_venues_by_region_tmp( $zm_state_preference );
+        if ( $tmp_venues_ids ){
+            $venues_id_intersect = array_intersect( $tmp_venues_ids, $zm_venues_id_preference );
+        }
+
+        // Select Events by user Venues pref.
+        if ( ! empty( $venues_id_intersect ) && $cpt == 'events' ){
+            $args['post_type'] = 'events';
+            $args['meta_query'] = array(
+                'relation' => 'AND',
+                array(
+                    'key' => 'venues_id',
+                    'value' => $venues_id_intersect,
+                    'compare' => 'IN'
+                    ),
+                array(
+                    'key' => 'events_start-date',
+                    'value' => date('Y'),
+                    'compare' => '>='
+                    )
+                );
+            $args['orderby'] = 'meta_value';
+            $args['meta_key'] = 'events_start-date';
+            $args['order'] = 'ASC';
+        } elseif ( ! empty( $venues_id_intersect ) && $cpt == 'venues' ) {
+            $args['post_type'] = 'venues';
+            $args['post__in'] = $venues_id_intersect;
+            unset( $args['meta_query'] );
+        } else {
+            return false;
+        }
+
+        zm_ev_user_state_pref( $zm_state_preference );
+        zm_ev_user_venue_pref( $zm_venues_id_preference );
+    } elseif ( $zm_state_preference && $cpt == 'venues' ){
+        /**
+         * If we have no state pref. and our post type is Venues
+         * Select Venues by user state pref.
+         */
+        $args['post_type'] = $cpt;
+        $args['meta_query'] = array(
+            array(
+                'key' => 'venues_state',
+                'value' => $zm_state_preference,
+                'compare' => 'IN'
+                )
+            );
+        zm_ev_user_state_pref( $zm_state_preference );
+    } elseif ( $zm_state_preference && $cpt == 'events' ){
+        /**
+         * Since we can't query Events by state we need to query
+         * Venues by state, returing a list of Venue IDs. Then
+         * query Events by Venues IDs. So we build a meta query
+         * by post_type of Venues where the meta key "venues_state"
+         * is any value from our state pref.
+         */
+        $tmp_venues_ids = zm_venues_by_region_tmp( $zm_state_preference );
+
+        /**
+         * Finally, we build our query arguments based the
+         * venues_ids found.
+         */
+        $args['post_type'] = 'events';
+        $args['meta_query'] = array(
+            'AND',
+            array(
+                'key' => 'venues_id',
+                'value' => $tmp_venues_ids,
+                'compare' => 'IN'
+                ),
+            array(
+                'key' => 'events_start-date',
+                'value' => date('Y'),
+                'compare' => '>='
+                )
+            );
+        $args['orderby'] = 'meta_value';
+        $args['meta_key'] = 'events_start-date';
+        $args['order'] = 'ASC';
+        zm_ev_user_state_pref( $zm_state_preference );
+    } else {
+        print "Nothing set in settigns.";
+        /**
+         * If we have no state or venue preference just return a query of
+         * either Events or Venues.
+         */
+        return get_posts( array( 'post_type' => array( $cpt ), 'post_status' => 'publish' ) );
+    }
+
+    $my_query = New WP_Query( $args );
+    return $my_query->posts;
+}

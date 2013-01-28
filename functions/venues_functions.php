@@ -142,13 +142,7 @@ Class Venues extends zMCustomPostTypeBase {
         print '<span class="count">' . $html . '</span>';
     }
 
-    /**
-     * Return a drop down of local tracks
-     *
-     * @todo transient
-     */
-    public function locationDropDown( $current_id=null ){
-
+    public function allQuery(){
         $query = new WP_Query( array(
             'post_type' => self::$instance->cpt,
             'posts_per_page' => -1,
@@ -156,13 +150,61 @@ Class Venues extends zMCustomPostTypeBase {
             'order' => 'ASC'
             )
         );
+        return $query->posts;
+    }
+
+    /**
+     * Return a drop down of local tracks
+     *
+     * @todo transient
+     */
+    public function locationDropDown( $current_id=null ){
+
+        $venues = $this->allQuery();
 
         $html = '<option>-- Choose a Venue --</option>';
-        foreach( $query->posts as $posts ) {
+        foreach( $venues as $posts ) {
             $html .= '<option value="'.$posts->ID.'" '.selected($current_id, $posts->ID, false).'>' . $posts->post_title.'</optoin>';
         }
         return '<select name="venues_id" class="chzn-select">'.$html.'</select>';
     }
+
+    // @todo use zm_base_build_select
+    public function locationSelect( $params=null ){
+
+        extract( $params );
+
+        if ( empty( $extra_data ) )
+            $extra_data = null;
+
+        if ( empty( $extra_class ) )
+            $extra_class = null;
+
+        if ( ! empty( $multiple ) ) {
+            $multiple = 'multiple="multiple"';
+        } else {
+            $multiple = false;
+        }
+
+        if ( empty( $default ) ){
+            $default = '-- Select a Venue --';
+        }
+
+        $venues = $this->allQuery();?>
+        <fieldset class="zm-ev-state-container">
+        <label class="zm-base-title">State</label>
+        <select name="venue" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
+            <option value=""><?php print $default; ?></option>
+            <?php foreach( $venues as $venue ) : ?>
+                <option value="<?php print $venue->ID; ?>"
+                    <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $venue->ID, $c ); ?>
+                    <?php endforeach; else : selected( $venue->ID, $current ); endif; ?>>
+                    <?php print $venue->post_title; ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        </fieldset>
+    <?php }
 
     /**
      * Retrive the total number of Events
@@ -412,16 +454,6 @@ Class Venues extends zMCustomPostTypeBase {
     }
 
     /**
-     * Determine local venues based on current location.
-     *
-     * @return Full query_posts for local venues.
-     */
-    public function getLocalVenues(){
-        $location = bmx_rs_get_user_location();
-        return $this->getVenueByCountry( $location['region_full'] );
-    }
-
-    /**
      * Return a random Local Venue ID
      *
      * Useful for showing a random venue based on location.
@@ -617,10 +649,8 @@ Class Venues extends zMCustomPostTypeBase {
         }
     }
 
-    public function stateSelect( $current=null ){
-
-        if ( is_array( $current ) )
-            extract( $current );
+    public function stateSelect( $params=null ){
+        extract( $params );
 
         if ( empty( $extra_data ) )
             $extra_data = null;
@@ -645,7 +675,7 @@ Class Venues extends zMCustomPostTypeBase {
     <select name="state" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
         <option><?php print $default; ?></option>
         <?php foreach( $states as $abbr => $name ) : ?>
-            <option <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $name, $c ); ?><?php endforeach; else : selected( $name, $current ); endif; ?>>
+            <option value="<?php print $abbr; ?>" <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $abbr, $c ); ?><?php endforeach; else : selected( $name, $current ); endif; ?>>
                 <?php print $name; ?>
             </option>
         <?php endforeach; ?>

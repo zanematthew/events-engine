@@ -330,8 +330,9 @@ class Events extends zMCustomPostTypeBase {
             __( 'Venue', 'myplugin_textdomain' ),
             function(){
                 global $post;
+                $venues = New Venues;
                 $venues_id = Events::getVenueId( $post->ID );
-                print Venues::locationDropDown( $venues_id );
+                print $venues->locationDropDown( $venues_id );
                 if ( ! empty( $venues_id ) ) print '<a href="' . admin_url() . 'post.php?post='.$venues_id.'&action=edit">Edit this Venue</a>';
             },
             $this->my_cpt
@@ -579,17 +580,27 @@ class Events extends zMCustomPostTypeBase {
         $venues->removeEventFromSchedule( $venues_id, $events_id );
     }
 
-    public function typeSelectBox( $default='-- Event Type --' ){
+    public function typeSelectBox( $current=null ){
 
+        $items = array();
+        foreach( get_terms('type') as $term ){
+            $tmp_items['id'] = $term->term_id;
+            $tmp_items['name'] = $term->name;
+            $items[] = $tmp_items;
+        }
         $args = array(
             'extra_data' => 'data-allows-new-values="true"',
             'extra_class' => 'chzn-select',
             'taxonomy' => 'type',
             'label' => 'Type',
-            'default' => $default
+            'default' => '-- Event Type --',
+            'multiple' => true,
+            'current' => $current, // list of IDs
+            'items' => $items,
+            'key' => 'type'
         );
 
-        zm_base_build_options( $args );
+        zm_base_build_select( $args );
     }
 
     public function customHeader($columns) {

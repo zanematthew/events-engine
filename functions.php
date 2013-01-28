@@ -95,14 +95,15 @@ function zm_ev_save_user_settings(){
 
     global $current_user;
     get_currentuserinfo();
+    $key = 'zm_' . $_POST['name'] . '_preference';
 
     if ( empty( $_POST['value'] ) ){
-        print delete_user_meta( $current_user->ID, 'zm_' . $_POST['name'] . '_preference', $_POST['value'] );
+        print delete_user_meta( $current_user->ID, $key, $_POST['value'] );
     } else {
         if ( $_POST['name'] == 'user_email' ){
-            print wp_update_user( array( 'ID' => $current_user->ID, 'zm_' . $_POST['name'] . '_preference' => $_POST['value'] ) );
+            print wp_update_user( array( 'ID' => $current_user->ID, $key => $_POST['value'] ) );
         }
-        print update_user_meta( $current_user->ID, 'zm_' . $_POST['name'] . '_preference', $_POST['value'] );
+        print update_user_meta( $current_user->ID, $key, $_POST['value'] );
     }
     die();
 }
