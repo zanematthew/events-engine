@@ -249,8 +249,7 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
             array(
                 'taxonomy' => 'type',
                 'field' => 'id',
-                'terms' => $zm_type_ids_preference,
-                'operator' => 'IN'
+                'terms' => $zm_type_ids_preference
                 )
             );
         $args['meta_query'] = array(
@@ -266,9 +265,6 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
                 'compare' => '>='
                 )
             );
-print '<pre>';
-print_r( $args );
-print '</pre>';
         zm_ev_user_type_pref( $zm_type_ids_preference );
         zm_ev_user_state_pref( $zm_state_preference );
     } elseif ( $zm_type_ids_preference && $cpt == 'events' ){
