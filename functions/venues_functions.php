@@ -169,42 +169,33 @@ Class Venues extends zMCustomPostTypeBase {
         return '<select name="venues_id" class="chzn-select">'.$html.'</select>';
     }
 
-    // @todo use zm_base_build_select
-    public function locationSelect( $params=null ){
+    /**
+     * Prints out the html needed for a multi-select of
+     * locations.
+     */
+    public function locationSelect( $current=null ){
 
-        extract( $params );
-
-        if ( empty( $extra_data ) )
-            $extra_data = null;
-
-        if ( empty( $extra_class ) )
-            $extra_class = null;
-
-        if ( ! empty( $multiple ) ) {
-            $multiple = 'multiple="multiple"';
-        } else {
-            $multiple = false;
+        $venues_obj = $this->allQuery();
+        foreach( $venues_obj as $v ){
+            $tmp['id'] = $v->ID;
+            $tmp['name'] = $v->post_title;
+            $items[] = $tmp;
         }
+        $key = 'venues';
 
-        if ( empty( $default ) ){
-            $default = '-- Select a Venue --';
-        }
+        $args = array(
+            'extra_data' => 'data-allows-new-values="true"',
+            'extra_class' => 'chzn-select',
+            'label' => ucfirst( $key ),
+            'default' => '-- Select a ' . ucfirst( $key ) . ' --',
+            'multiple' => true,
+            'current' => $current, // list of IDs
+            'items' => $items,
+            'key' => $key
+        );
 
-        $venues = $this->allQuery();?>
-        <fieldset class="zm-ev-state-container">
-        <label class="zm-base-title">State</label>
-        <select name="venue" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
-            <option value=""><?php print $default; ?></option>
-            <?php foreach( $venues as $venue ) : ?>
-                <option value="<?php print $venue->ID; ?>"
-                    <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $venue->ID, $c ); ?>
-                    <?php endforeach; else : selected( $venue->ID, $current ); endif; ?>>
-                    <?php print $venue->post_title; ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-        </fieldset>
-    <?php }
+        zm_base_build_select( $args );
+    }
 
     /**
      * Retrive the total number of Events
