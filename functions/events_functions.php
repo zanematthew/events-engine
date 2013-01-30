@@ -593,7 +593,6 @@ class Events extends zMCustomPostTypeBase {
             'extra_class' => 'chzn-select',
             'taxonomy' => 'type',
             'label' => 'Type',
-            'default' => '-- Event Type --',
             'multiple' => true,
             'current' => $current, // list of IDs
             'items' => $items,

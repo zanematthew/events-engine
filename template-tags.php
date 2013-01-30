@@ -229,9 +229,9 @@ function zm_ev_user_type_pref( $type_ids=null ){
 function zm_ev_venues_by_user_pref_args( $cpt=null ){
 
     $current_user = wp_get_current_user();
-    $zm_state_preference = get_user_meta( $current_user->ID, 'zm_state_preference', true );
-    $zm_venues_id_preference = get_user_meta( $current_user->ID, 'zm_venue_preference', true );
-    $zm_type_ids_preference = get_user_meta( $current_user->ID, 'zm_type_preference', true );
+    $zm_state_preference = get_user_meta( $current_user->ID, 'state', true );
+    $zm_venues_id_preference = get_user_meta( $current_user->ID, 'venue', true );
+    $zm_type_ids_preference = get_user_meta( $current_user->ID, 'type', true );
 
     // start our shared arguments
     $args = array(

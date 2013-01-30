@@ -87,6 +87,7 @@ function zm_ev_get_tax_term( $tax=array() ){
 
 /**
  * Save the settings, note this is called via ajax!
+ * @todo check ajax refer
  */
 function zm_ev_save_user_settings(){
 
@@ -95,16 +96,64 @@ function zm_ev_save_user_settings(){
 
     global $current_user;
     get_currentuserinfo();
-    $key = 'zm_' . $_POST['name'] . '_preference';
 
-    if ( empty( $_POST['value'] ) ){
-        print delete_user_meta( $current_user->ID, $key, $_POST['value'] );
-    } else {
-        if ( $_POST['name'] == 'user_email' ){
-            print wp_update_user( array( 'ID' => $current_user->ID, $key => $_POST['value'] ) );
+    /**
+     * Set out white list of keys
+     */
+    $white_list = array(
+        'default_location',
+        'state',
+        'type',
+        'venues',
+        'user_email'
+        );
+
+    /**
+     * Action is being sent with the ajax requst, so we unset it.
+     */
+    unset( $_POST['action'] );
+
+    foreach( $_POST as $key => $value ){
+
+        /**
+         * If any value is not in our white list we
+         * unset (remove it) from our $_POST variable
+         */
+        if ( ! in_array( $key, $white_list ) ) unset( $_POST[ $key ] );
+
+        /**
+         * Since I'm not a fan of storing empty key/values in the db,
+         * we remove the key if its empty.
+         */
+        if ( empty( $value ) ){
+            unset( $_POST[ $key ] );
+            delete_user_meta( $current_user->ID, $key, $value );
         }
-        print update_user_meta( $current_user->ID, $key, $_POST['value'] );
+
+        /**
+         * A special case for email updates
+         */
+        elseif ( $key == 'user_email' ){
+            wp_update_user( array( 'ID' => $current_user->ID, $key => $value ) );
+        }
+
+        /**
+         * Finally, our default, update the user meta with the
+         * user ID, key and value.
+         */
+        else {
+            update_user_meta( $current_user->ID, $key, $value );
+        }
     }
+
+    /**
+     * We send the new settings back to the ajax request as json encoded data.
+     */
+    print json_encode( $_POST );
+
+    /**
+     * Yes, ALL WordPress ajax request must die!
+     */
     die();
 }
 add_action( 'wp_ajax_zm_ev_save_user_settings', 'zm_ev_save_user_settings' );

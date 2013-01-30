@@ -187,7 +187,6 @@ Class Venues extends zMCustomPostTypeBase {
             'extra_data' => 'data-allows-new-values="true"',
             'extra_class' => 'chzn-select',
             'label' => ucfirst( $key ),
-            'default' => '-- Select a ' . ucfirst( $key ) . ' --',
             'multiple' => true,
             'current' => $current, // list of IDs
             'items' => $items,
@@ -642,7 +641,7 @@ Class Venues extends zMCustomPostTypeBase {
 
     public function stateSelect( $params=null ){
         extract( $params );
-
+        $key = 'state';
         if ( empty( $extra_data ) )
             $extra_data = null;
 
@@ -651,19 +650,20 @@ Class Venues extends zMCustomPostTypeBase {
 
         if ( ! empty( $multiple ) ) {
             $multiple = 'multiple="multiple"';
+            $key .= '[]';
         } else {
             $multiple = false;
         }
 
         if ( empty( $default ) ){
-            $default = '-- Select a State --';
+            $default = null;
         }
 
         $states = $this->state_list;
     ?>
     <fieldset class="zm-ev-state-container">
     <label class="zm-base-title">State</label>
-    <select name="state" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
+    <select name="<?php echo $key; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="">
         <option><?php print $default; ?></option>
         <?php foreach( $states as $abbr => $name ) : ?>
             <option value="<?php print $abbr; ?>" <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $abbr, $c ); ?><?php endforeach; else : selected( $name, $current ); endif; ?>>
