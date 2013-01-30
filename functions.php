@@ -1,6 +1,18 @@
 <?php
 
 /**
+ * Set our global white list of keys
+ */
+global $zm_user_settings;
+$zm_user_settings = array(
+    'default_location',
+    'state',
+    'type',
+    'venues',
+    'user_email'
+    );
+
+/**
  * This file handles redirecting of our templates to our given views
  * dir and anything else.
  *
@@ -35,6 +47,7 @@ add_action('init','zm_ev_init');
 
 function zm_ev_js_var_setup(){
     global $current_user;
+    global $zm_user_settings;
     get_currentuserinfo();
 
     if ( get_user_meta( $current_user->ID, 'fb_id', true ) ){
@@ -42,6 +55,13 @@ function zm_ev_js_var_setup(){
     } else {
         $uid = $current_user->ID;
     }
+
+    $tmp = array();
+    foreach( $zm_user_settings as $k ){
+        $value = get_user_meta( $current_user->ID, $k, true );
+        if ( ! empty( $value ) ) $tmp[$k] = $value;
+    }
+    $settings = json_encode( $tmp );
 
     ?><script type="text/javascript">
 
@@ -56,7 +76,7 @@ function zm_ev_js_var_setup(){
         user_login: "<?php print $current_user->user_login; ?>",
         uid:        <?php print $uid; ?>
     };
-
+    _user.settings = <?php print $settings; ?>;
     </script>
 <?php }
 
@@ -97,16 +117,8 @@ function zm_ev_save_user_settings(){
     global $current_user;
     get_currentuserinfo();
 
-    /**
-     * Set out white list of keys
-     */
-    $white_list = array(
-        'default_location',
-        'state',
-        'type',
-        'venues',
-        'user_email'
-        );
+    global $zm_user_settings;
+
 
     /**
      * Action is being sent with the ajax requst, so we unset it.
@@ -119,7 +131,7 @@ function zm_ev_save_user_settings(){
          * If any value is not in our white list we
          * unset (remove it) from our $_POST variable
          */
-        if ( ! in_array( $key, $white_list ) ) unset( $_POST[ $key ] );
+        if ( ! in_array( $key, $zm_user_settings ) ) unset( $_POST[ $key ] );
 
         /**
          * Since I'm not a fan of storing empty key/values in the db,
