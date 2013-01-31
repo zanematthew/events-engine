@@ -111,42 +111,37 @@ function zm_ev_get_tax_term( $tax=array() ){
  */
 function zm_ev_save_user_settings(){
 
-    if ( empty( $_POST ) )
-        return;
-
     global $current_user;
     get_currentuserinfo();
 
     global $zm_user_settings;
-
 
     /**
      * Action is being sent with the ajax requst, so we unset it.
      */
     unset( $_POST['action'] );
 
-    foreach( $_POST as $key => $value ){
+    foreach( $zm_user_settings as $key ){
 
         /**
          * If any value is not in our white list we
          * unset (remove it) from our $_POST variable
          */
-        if ( ! in_array( $key, $zm_user_settings ) ) unset( $_POST[ $key ] );
 
         /**
          * Since I'm not a fan of storing empty key/values in the db,
          * we remove the key if its empty.
          */
-        if ( empty( $value ) ){
+        if ( ! isset( $_POST[ $key ] )  ) {
+            delete_user_meta( $current_user->ID, $key );
             unset( $_POST[ $key ] );
-            delete_user_meta( $current_user->ID, $key, $value );
         }
 
         /**
          * A special case for email updates
          */
         elseif ( $key == 'user_email' ){
-            wp_update_user( array( 'ID' => $current_user->ID, $key => $value ) );
+            wp_update_user( array( 'ID' => $current_user->ID, $key => $_POST[ $key ] ) );
         }
 
         /**
@@ -154,7 +149,7 @@ function zm_ev_save_user_settings(){
          * user ID, key and value.
          */
         else {
-            update_user_meta( $current_user->ID, $key, $value );
+            update_user_meta( $current_user->ID, $key, $_POST[ $key ] );
         }
     }
 
