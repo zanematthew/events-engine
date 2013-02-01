@@ -145,6 +145,11 @@ function zm_event_date( $post_id=null, $both=true ){
     print $date;
 }
 
+function zm_user_setting_link(){
+    $current_user = wp_get_current_user();
+    return '<a href="' . site_url() .'/attendees/' . $current_user->user_login . '/settings/">settings</a>';
+}
+
 // I think we did this before? Check later
 function zm_venues_by_region_tmp( $state_abbr=null ){
     $args['post_type'] = 'venues';
@@ -172,13 +177,11 @@ function zm_venues_by_region_tmp( $state_abbr=null ){
 }
 
 function zm_ev_user_state_pref( $state_pref=null ){
-
     $venues = New Venues;
     $count = count( $state_pref );
     $i = 0;
-    $current_user = wp_get_current_user();
 
-    $html = '<div class="row"><div class="padding"><div class="alert alert-success"><strong>States</strong> ';
+    $html = '<div class="alert alert-success"><strong>States</strong> ';
     foreach( $state_pref as $state_abbr ) {
         $state = $venues->stateByAbbreviation( $state_abbr );
         $html .= "<em>{$state}</em>";
@@ -187,16 +190,15 @@ function zm_ev_user_state_pref( $state_pref=null ){
             $html .= ", ";
         }
     }
-
-    $html .= '<a href="' . site_url() .'/attendees/' . $current_user->user_login . '/settings/"> Settings</a></div></div></div>';
+    $html .= zm_user_setting_link();
+    $html .= '</div>';
     print $html;
 }
 
 function zm_ev_user_venue_pref( $venues_id=null ){
     $i = 0;
     $count = count( $venues_id );
-    $current_user = wp_get_current_user();
-    $html = '<div class="row"><div class="padding"><div class="alert alert-success"><strong>Venues</strong> ';
+    $html = '<div class="alert alert-success"><strong>Venues</strong> ';
     foreach( $venues_id as $id ){
         $html .= get_the_title( $id );
         $i++;
@@ -204,15 +206,15 @@ function zm_ev_user_venue_pref( $venues_id=null ){
             $html .= ", ";
         }
     }
-    $html .= '<a href="' . site_url() .'/attendees/' . $current_user->user_login . '/settings/"> Settings</a></div></div></div>';
+    $html .= zm_user_setting_link();
+    $html .= '</div>';
     print $html;
 }
 
 function zm_ev_user_type_pref( $type_ids=null ){
     $i = 0;
     $count = count( $type_ids );
-    $current_user = wp_get_current_user();
-    $html = '<div class="row"><div class="padding"><div class="alert alert-success"><strong>types</strong> ';
+    $html = '<div class="alert alert-success"><strong>Types</strong> ';
 
     foreach( $type_ids as $id ){
         $terms = get_term_by('id', $id, 'type' );
@@ -222,7 +224,8 @@ function zm_ev_user_type_pref( $type_ids=null ){
             $html .= ", ";
         }
     }
-    $html .= '<a href="' . site_url() .'/attendees/' . $current_user->user_login . '/settings/"> Settings</a></div></div></div>';
+    $html .= zm_user_setting_link();
+    $html .= '</div>';
     print $html;
 }
 
@@ -359,7 +362,7 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
         $args['order'] = 'ASC';
         zm_ev_user_state_pref( $zm_state_preference );
     } else {
-        print "Nothing set in settigns.";
+        print '<div class="alert alert-info">Goto ' . zm_user_setting_link() . ' to fine tune your results.</div>';
         /**
          * If we have no state or venue preference just return a query of
          * either Events or Venues.

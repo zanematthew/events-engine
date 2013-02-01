@@ -68,6 +68,7 @@ function zm_ev_settings_page(){?>
         float: left;
         padding: 10px;
         margin: 0 15px 15px 0;
+        width: 400px;
         border-radius: 4px;
         }
 
@@ -83,13 +84,15 @@ function zm_ev_settings_page(){?>
         }
 
     .zm-ev-settings-container label {
-        width: 85px;
+        width: 125px;
         line-height: 20px;
         float: left;
+        text-transform: capitalize;
         }
 
-    .zm-ev-settings-container input[type="text"] {
+    .zm-ev-settings-container fieldset input[type="text"] {
         float: left;
+        width: 68%;
         }
 
     .zm-ev-settings-container .zm-status-saved {
