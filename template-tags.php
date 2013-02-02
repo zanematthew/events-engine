@@ -146,8 +146,15 @@ function zm_event_date( $post_id=null, $both=true ){
 }
 
 function zm_user_setting_link(){
-    $current_user = wp_get_current_user();
-    return '<a href="' . site_url() .'/attendees/' . $current_user->user_login . '/settings/">settings</a>';
+    if ( is_user_logged_in() ){
+        $current_user = wp_get_current_user();
+        $href = site_url() .'/attendees/' . $current_user->user_login . '/settings/';
+        $class = null;
+    } else {
+        $class = 'zm-login-handle';
+        $href = null;
+    }
+    return '<a href="'.$href.'" class="'.$class.'">settings</a>';
 }
 
 // I think we did this before? Check later
@@ -362,7 +369,7 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
         $args['order'] = 'ASC';
         zm_ev_user_state_pref( $zm_state_preference );
     } else {
-        print '<div class="alert alert-info">Goto ' . zm_user_setting_link() . ' to fine tune your results.</div>';
+        print '<div class="alert alert-info">Fine tune results in ' . zm_user_setting_link() . '.</div>';
         /**
          * If we have no state or venue preference just return a query of
          * either Events or Venues.

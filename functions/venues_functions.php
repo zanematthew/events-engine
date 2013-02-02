@@ -166,7 +166,7 @@ Class Venues extends zMCustomPostTypeBase {
         foreach( $venues as $posts ) {
             $html .= '<option value="'.$posts->ID.'" '.selected($current_id, $posts->ID, false).'>' . $posts->post_title.'</optoin>';
         }
-        return '<select name="venues_id" class="chzn-select">'.$html.'</select>';
+        return '<select name="venues_id" class="chzn-select"  data-placeholder="Choose a Venue..." style="width: 700px;>'.$html.'</select>';
     }
 
     /**
@@ -184,7 +184,7 @@ Class Venues extends zMCustomPostTypeBase {
         $key = 'venues';
 
         $args = array(
-            'extra_data' => 'data-allows-new-values="true"',
+            'extra_data' => 'data-allows-new-values="true" style="width: 700px;" data-placeholder="Choose a Venue..."',
             'extra_class' => 'chzn-select',
             'label' => ucfirst( $key ),
             'multiple' => true,
@@ -586,40 +586,27 @@ Class Venues extends zMCustomPostTypeBase {
         }
     }
 
-    public function stateSelect( $params=null ){
-        extract( $params );
+    public function stateSelect( $current=null ){
+
         $key = 'state';
-        if ( empty( $extra_data ) )
-            $extra_data = null;
-
-        if ( empty( $extra_class ) )
-            $extra_class = null;
-
-        if ( ! empty( $multiple ) ) {
-            $multiple = 'multiple="multiple"';
-            $key .= '[]';
-        } else {
-            $multiple = false;
+        $items = array();
+        foreach( $this->state_list as $abbr => $state ){
+            $tmp_items['id'] = $abbr;
+            $tmp_items['name'] = $state;
+            $items[] = $tmp_items;
         }
 
-        if ( empty( $default ) ){
-            $default = null;
-        }
+        $args = array(
+            'extra_data' => 'data-allows-new-values="true" style="width: 700px;" data-placeholder="Choose a State..."',
+            'extra_class' => 'chzn-select',
+            'current' => $current,
+            'multiple' => true,
+            'items' => $items,
+            'key' => $key
+            );
 
-        $states = $this->state_list;
-    ?>
-    <fieldset class="zm-ev-state-container">
-    <label class="zm-base-title">State</label>
-    <select name="<?php echo $key; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="">
-        <option><?php print $default; ?></option>
-        <?php foreach( $states as $abbr => $name ) : ?>
-            <option value="<?php print $abbr; ?>" <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $abbr, $c ); ?><?php endforeach; else : selected( $name, $current ); endif; ?>>
-                <?php print $name; ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-    </fieldset>
-    <?php }
+        zm_base_build_select( $args );
+    }
 
     public function customHeader($columns) {
         return $columns + array('venues_event_count' => __('Event Count') );

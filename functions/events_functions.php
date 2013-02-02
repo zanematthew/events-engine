@@ -589,7 +589,7 @@ class Events extends zMCustomPostTypeBase {
             $items[] = $tmp_items;
         }
         $args = array(
-            'extra_data' => 'data-allows-new-values="true"',
+            'extra_data' => 'data-allows-new-values="true" style="width: 700px;" data-placeholder="Choose a Type..."',
             'extra_class' => 'chzn-select',
             'taxonomy' => 'type',
             'label' => 'Type',
