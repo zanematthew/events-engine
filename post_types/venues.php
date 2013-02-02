@@ -20,7 +20,7 @@ $venues->post_type = array(
             'thumbnail'
         ),
         'taxonomies' => array(
-            'track_tags',
+            'venues_tags',
             'region'
             )
     )
