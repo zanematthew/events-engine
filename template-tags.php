@@ -157,32 +157,6 @@ function zm_user_setting_link(){
     return '<a href="'.$href.'" class="'.$class.'">settings</a>';
 }
 
-// I think we did this before? Check later
-function zm_venues_by_region_tmp( $state_abbr=null ){
-    $args['post_type'] = 'venues';
-    $args['meta_query'] = array(
-        array(
-            'key' => 'venues_state',
-            'value' => $state_abbr,
-            'compare' => 'IN'
-            )
-        );
-
-    /**
-     * Once we have the arguments build we run the query and
-     * build an array of post IDs.
-     */
-    $venues_by_region = New WP_Query( $args );
-    $tmp_venues_ids = array();
-    foreach( $venues_by_region->posts as $venues ){
-        $tmp_venues_ids[] = $venues->ID;
-    }
-
-    unset( $args['meta_query'] );
-    wp_reset_postdata();
-    return $tmp_venues_ids;
-}
-
 function zm_ev_user_state_pref( $state_pref=null ){
     $venues = New Venues;
     $count = count( $state_pref );
@@ -240,34 +214,68 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
 
     $current_user = wp_get_current_user();
     $zm_state_preference = get_user_meta( $current_user->ID, 'state', true );
-    $zm_venues_id_preference = get_user_meta( $current_user->ID, 'venue', true );
+    $zm_venues_id_preference = get_user_meta( $current_user->ID, 'venues', true );
     $zm_type_ids_preference = get_user_meta( $current_user->ID, 'type', true );
+    $venues = New Venues;
 
     // start our shared arguments
-    $args = array(
-        'post_status' => 'publish',
-        'posts_per_page' => -1
-        );
+    $args = array( 'post_status' => 'publish', 'posts_per_page' => -1 );
+    $tax_query = array( array( 'taxonomy' => 'type', 'field' => 'id', 'terms' => $zm_type_ids_preference ) );
 
-    if ( $zm_state_preference && $zm_type_ids_preference && $cpt == 'events' ){
+    if ( $zm_state_preference && $zm_venues_id_preference && $zm_type_ids_preference ) {
+
+        $tmp_venues_ids = $venues->getVenueIdByState( $zm_state_preference );
+        if ( $tmp_venues_ids ){
+            $venues_id_intersect = array_intersect( $tmp_venues_ids, $zm_venues_id_preference );
+        }
+
+        // Select Events by user Venues pref.
+        if ( ! empty( $venues_id_intersect ) && $cpt == 'events' ){
+            $args['post_type'] = 'events';
+            $args['tax_query'] = $tax_query;
+            $args['meta_query'] = array(
+                'relation' => 'AND',
+                array(
+                    'key' => 'venues_id',
+                    'value' => $venues_id_intersect,
+                    'compare' => 'IN'
+                    ),
+                array(
+                    'key' => 'events_start-date',
+                    'value' => date('Y'),
+                    'compare' => '>='
+                    )
+                );
+            $args['orderby'] = 'meta_value';
+            $args['meta_key'] = 'events_start-date';
+            $args['order'] = 'ASC';
+        } elseif ( ! empty( $venues_id_intersect ) && $cpt == 'venues' ) {
+            $args['post_type'] = 'venues';
+            $args['post__in'] = $venues_id_intersect;
+            unset( $args['meta_query'] );
+        } else {
+            return false;
+        }
+
+        zm_ev_user_state_pref( $zm_state_preference );
+        zm_ev_user_venue_pref( $zm_venues_id_preference );
+        zm_ev_user_type_pref( $zm_type_ids_preference );
+
+    } elseif ( $zm_state_preference && $zm_type_ids_preference && $cpt == 'events' ){
         /**
          * If we have a state pref. and type pref. and post is Events
          */
-        $tmp_venues_ids = zm_venues_by_region_tmp( $zm_state_preference );
+        $tmp_venues_ids = $venues->getVenueIdByState( $zm_state_preference );
+
         $args['post_type'] = 'events';
-        $args['tax_query'] = array(
-            array(
-                'taxonomy' => 'type',
-                'field' => 'id',
-                'terms' => $zm_type_ids_preference
-                )
-            );
+        $args['tax_query'] = $tax_query;
         $args['meta_query'] = array(
             'relation' => 'AND',
             array(
                 'key' => 'venues_id',
                 'value' => $tmp_venues_ids,
-                'compare' => 'IN'
+                'compare' => 'IN',
+                'type' => 'NUMERIC'
                 ),
             array(
                 'key' => 'events_start-date',
@@ -275,6 +283,7 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
                 'compare' => '>='
                 )
             );
+
         zm_ev_user_type_pref( $zm_type_ids_preference );
         zm_ev_user_state_pref( $zm_state_preference );
     } elseif ( $zm_type_ids_preference && $cpt == 'events' ){
@@ -288,7 +297,7 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
             );
         zm_ev_user_type_pref( $zm_type_ids_preference );
     } elseif ( $zm_state_preference && $zm_venues_id_preference ) {
-        $tmp_venues_ids = zm_venues_by_region_tmp( $zm_state_preference );
+        $tmp_venues_ids = $venues->getVenueIdByState( $zm_state_preference );
         if ( $tmp_venues_ids ){
             $venues_id_intersect = array_intersect( $tmp_venues_ids, $zm_venues_id_preference );
         }
@@ -344,7 +353,7 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
          * by post_type of Venues where the meta key "venues_state"
          * is any value from our state pref.
          */
-        $tmp_venues_ids = zm_venues_by_region_tmp( $zm_state_preference );
+        $tmp_venues_ids = $venues->getVenueIdByState( $zm_state_preference );
 
         /**
          * Finally, we build our query arguments based the

@@ -331,11 +331,12 @@ Class Venues extends zMCustomPostTypeBase {
     }
 
     /**
-     * Returns the ID of all Venues in a given Region (full region)
-     * @param $region = 'maryland'
+     * Returns ALL Venues in a given region, i.e. coast
+     *
+     * @param $region (string/array) i.e., east|west|central
      * @todo transient
      */
-    public function getVenueByRegion( $region=null, $type=null ){
+    public function getVenueByRegion( $region=null ){
 
         $args = array(
             'post_type' => $this->cpt,
@@ -361,11 +362,12 @@ Class Venues extends zMCustomPostTypeBase {
     }
 
     /**
-     * Returns the ID of all Venues in a given Region (full region)
-     * @param $region = 'maryland'
+     * Returns all Venues in a given state.
+     *
+     * @param $state_abbr (string/array)
      * @todo transient
      */
-    public function getVenueByCountry( $region=null ){
+    public function getVenueByState( $state_abbr=null ){
 
         $args = array(
             'post_type' => $this->cpt,
@@ -374,8 +376,8 @@ Class Venues extends zMCustomPostTypeBase {
             'meta_query' => array(
                  array(
                      'key' => 'venues_state',
-                     'value' => $region,
-                     'compare' => '='
+                     'value' => $state_abbr,
+                     'compare' => 'IN'
                      )
                  ),
             'orderby' => 'meta_value',
@@ -383,11 +385,25 @@ Class Venues extends zMCustomPostTypeBase {
             );
 
         $query = new WP_Query( $args );
+        wp_reset_postdata();
 
         if ( $query->post_count == 0 )
             return false;
         else
             return $query->posts;
+    }
+
+    public function getVenueIdByState( $state_abbr=null ){
+        /**
+         * Once we have the arguments build we run the query and
+         * build an array of post IDs.
+         */
+        $tmp_venues_ids = array();
+        foreach( $this->getVenueByState( $state_abbr ) as $venues ){
+            $tmp_venues_ids[] = $venues->ID;
+        }
+
+        return $tmp_venues_ids;
     }
 
     /**
