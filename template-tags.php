@@ -145,7 +145,7 @@ function zm_event_date( $post_id=null, $both=true ){
     print $date;
 }
 
-function zm_user_setting_link(){
+function zm_user_setting_link( $text='Personalize' ){
     if ( is_user_logged_in() ){
         $current_user = wp_get_current_user();
         $href = site_url() .'/attendees/' . $current_user->user_login . '/settings/';
@@ -154,15 +154,18 @@ function zm_user_setting_link(){
         $class = 'zm-login-handle';
         $href = null;
     }
-    return '<a href="'.$href.'" class="'.$class.'">settings</a>';
+    return '<a href="'.$href.'" class="'.$class.'"> ' . $text . ' </a>';
 }
 
-function zm_ev_user_state_pref( $state_pref=null ){
+function zm_ev_user_state_pref( $state_pref=null, $echo=true ){
+
+    if ( ! $state_pref ) return false;
+
     $venues = New Venues;
     $count = count( $state_pref );
     $i = 0;
 
-    $html = '<div class="alert alert-success"><strong>States</strong> ';
+    $html = null;
     foreach( $state_pref as $state_abbr ) {
         $state = $venues->stateByAbbreviation( $state_abbr );
         $html .= "<em>{$state}</em>";
@@ -171,51 +174,63 @@ function zm_ev_user_state_pref( $state_pref=null ){
             $html .= ", ";
         }
     }
-    $html .= zm_user_setting_link();
-    $html .= '</div>';
-    print $html;
+
+    if ( $echo ){
+        print '<div class="alert alert-success"><strong>States</strong> ' . $html . '</div>';
+    } else {
+        return $html;
+    }
 }
 
-function zm_ev_user_venue_pref( $venues_id=null ){
+function zm_ev_user_venue_pref( $venues_id=null, $echo=true ){
+
+    if ( ! $venues_id ) return false;
+
     $i = 0;
     $count = count( $venues_id );
-    $html = '<div class="alert alert-success"><strong>Venues</strong> ';
+    $html = null;
     foreach( $venues_id as $id ){
-        $html .= get_the_title( $id );
+        $html .= '<em>'.get_the_title( $id ).'</em>';
         $i++;
         if ( $i != $count ){
             $html .= ", ";
         }
     }
-    $html .= zm_user_setting_link();
-    $html .= '</div>';
-    print $html;
+    if ( $echo ){
+        print '<div class="alert alert-success"><strong>States</strong> ' . $html . '</div>';
+    } else {
+        return $html;
+    }
 }
 
-function zm_ev_user_type_pref( $type_ids=null ){
+function zm_ev_user_type_pref( $type_ids=null, $echo=true ){
+
+    if ( ! $type_ids ) return false;
+
     $i = 0;
     $count = count( $type_ids );
-    $html = '<div class="alert alert-success"><strong>Types</strong> ';
-
+    $html = null;
     foreach( $type_ids as $id ){
         $terms = get_term_by('id', $id, 'type' );
         $i++;
-        $html .= $terms->name;
+        $html .= '<em>'.$terms->name.'</em>';
         if ( $i != $count ){
             $html .= ", ";
         }
     }
-    $html .= zm_user_setting_link();
-    $html .= '</div>';
-    print $html;
+
+    if ( $echo ){
+        print '<div class="alert alert-info"><strong>Types</strong> '. $html . '</div>';
+    } else {
+        return $html;
+    }
 }
 
 function zm_ev_venues_by_user_pref_args( $cpt=null ){
 
-    $current_user = wp_get_current_user();
-    $zm_state_preference = get_user_meta( $current_user->ID, 'state', true );
-    $zm_venues_id_preference = get_user_meta( $current_user->ID, 'venues', true );
-    $zm_type_ids_preference = get_user_meta( $current_user->ID, 'type', true );
+    $zm_state_preference = get_user_meta( get_current_user_id(), 'state', true );
+    $zm_venues_id_preference = get_user_meta( get_current_user_id(), 'venues', true );
+    $zm_type_ids_preference = get_user_meta( get_current_user_id(), 'type', true );
     $venues = New Venues;
 
     // start our shared arguments
@@ -284,18 +299,9 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
                 )
             );
 
-        zm_ev_user_type_pref( $zm_type_ids_preference );
-        zm_ev_user_state_pref( $zm_state_preference );
     } elseif ( $zm_type_ids_preference && $cpt == 'events' ){
         $args['post_type'] = 'events';
-        $args['tax_query'] = array(
-            array(
-                'taxonomy' => 'type',
-                'field' => 'id',
-                'terms' => $zm_type_ids_preference
-                )
-            );
-        zm_ev_user_type_pref( $zm_type_ids_preference );
+        $args['tax_query'] = $tax_query;
     } elseif ( $zm_state_preference && $zm_venues_id_preference ) {
         $tmp_venues_ids = $venues->getVenueIdByState( $zm_state_preference );
         if ( $tmp_venues_ids ){
@@ -329,8 +335,6 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
             return false;
         }
 
-        zm_ev_user_state_pref( $zm_state_preference );
-        zm_ev_user_venue_pref( $zm_venues_id_preference );
     } elseif ( $zm_state_preference && $cpt == 'venues' ){
         /**
          * If we have no state pref. and our post type is Venues
@@ -344,7 +348,7 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
                 'compare' => 'IN'
                 )
             );
-        zm_ev_user_state_pref( $zm_state_preference );
+
     } elseif ( $zm_state_preference && $cpt == 'events' ){
         /**
          * Since we can't query Events by state we need to query
@@ -376,16 +380,44 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
         $args['orderby'] = 'meta_value';
         $args['meta_key'] = 'events_start-date';
         $args['order'] = 'ASC';
-        zm_ev_user_state_pref( $zm_state_preference );
+
     } else {
-        print '<div class="alert alert-info">Fine tune results in ' . zm_user_setting_link() . '.</div>';
         /**
          * If we have no state or venue preference just return a query of
          * either Events or Venues.
          */
-        return get_posts( array( 'post_type' => array( $cpt ), 'post_status' => 'publish' ) );
+        return get_posts(
+            array(
+                'post_type' => array( $cpt ),
+                'post_status' => 'publish',
+                'meta_query' => array(
+                    array(
+                        'key' => 'events_start-date',
+                        'value' => date('Y'),
+                        'compare' => '>='
+                        )
+                    ),
+                'meta_key' => 'events_start-date',
+                'orderby' => 'meta_value',
+                'order' => 'ASC'
+                )
+            );
     }
 
     $my_query = New WP_Query( $args );
     return $my_query->posts;
+}
+
+function zm_ev_user_pref_message(){
+
+    $user_id = get_current_user_id();
+
+    $types = zm_ev_user_type_pref( get_user_meta( $user_id, 'type', true ), $echo=false );
+    $states = zm_ev_user_state_pref( get_user_meta( $user_id, 'state', true ), $echo=false );
+    $venues = zm_ev_user_venue_pref( get_user_meta( $user_id, 'venues', true ), $echo=false );
+    $html = null;
+    if ( $types || $states || $venues )
+        $html = $types . ' &bull; ' . $states . ' &bull; ' . $venues;
+
+     print '<div class="alert alert-success">' . zm_user_setting_link() . $html . '</div>';
 }
