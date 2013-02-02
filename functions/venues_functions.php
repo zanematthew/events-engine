@@ -586,14 +586,35 @@ Class Venues extends zMCustomPostTypeBase {
         }
     }
 
-    public function stateSelect( $current=null ){
+    /**
+     * Prints out an select box of states.
+     *
+     * @param $current (string/array) The current item.
+     * @param $all (bool) Either print states that have no Veneus.
+     * @uses zm_base_build_select() To build select
+     */
+    public function stateSelect( $current=null, $all=true ){
 
         $key = 'state';
         $items = array();
-        foreach( $this->state_list as $abbr => $state ){
-            $tmp_items['id'] = $abbr;
-            $tmp_items['name'] = $state;
-            $items[] = $tmp_items;
+
+        if ( $all ){
+            foreach( $this->state_list as $abbr => $state ){
+                $tmp_items['id'] = $abbr;
+                $tmp_items['name'] = $state;
+                $items[] = $tmp_items;
+            }
+        } else {
+            global $wpdb;
+            $tmp_r = $wpdb->get_col( "SELECT distinct( upper( `meta_value` ) ) FROM {$wpdb->prefix}postmeta WHERE `meta_key` LIKE '{$this->cpt}_state' ORDER BY `meta_value` ASC;" );
+            foreach( $tmp_r as $abbr ){
+                if ( ! in_array( $abbr, $this->state_list ) ) {
+                    if ( $this->stateByAbbreviation( $abbr ) == "Unknown" ) continue;
+                    $tmp_items['id'] = $abbr;
+                    $tmp_items['name'] = $this->stateByAbbreviation( $abbr );
+                    $items[] = $tmp_items;
+                }
+            }
         }
 
         $args = array(
