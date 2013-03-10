@@ -13,8 +13,7 @@ define( 'ZM_EV_OPTION', 'zm_ev_version' );
 
 /**
  * Check if zM Easy Custom Post Types is installed. If it
- * is NOT installed we display an admin notice and stop
- * execution of this plugin, returning.
+ * is NOT installed we display an admin notice and return.
  */
 if ( ! get_option('zm_easy_cpt_version' ) ){
     function zm_ev_admin_notice(){

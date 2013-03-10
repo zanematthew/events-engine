@@ -54,7 +54,7 @@ add_action( 'wp_ajax_nopriv_zm_ev_save_settings', 'zm_ev_save_settings');
  * Hook to display the Admin Menu
  */
 function zm_ev_settings_menu(){
-    add_menu_page( 'E V S', 'E&V Settings', 'activate_plugins', 'events-venues-settings', 'zm_ev_settings_page', $icon_url=null, $position=null );
+    add_submenu_page( 'options-general.php', 'evs', 'EV:Settings', 'activate_plugins', 'events-venues-settings', 'zm_ev_settings_page' );
 }
 add_action('admin_menu','zm_ev_settings_menu');
 

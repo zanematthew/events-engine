@@ -1,12 +1,10 @@
 jQuery( document ).ready(function( $ ){
-     /**
+
+    /**
      * Load tabs
      */
-    $(function(){
+    if ( jQuery().tabs )
         $( ".tabs-handle" ).tabs();
-    });
-
-    $( ".tabs-handle" ).tabs();
 
     /**
      * Attach the tinymce to our textarea

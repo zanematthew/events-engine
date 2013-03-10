@@ -21,7 +21,7 @@ class Events extends zMCustomPostTypeBase {
         self::$instance = $this;
         parent::__construct();
 
-        $this->my_cpt = strtolower( get_class( self::$instance ) );
+        $this->my_cpt = strtolower( __CLASS__ );
 
         if ( is_admin() ){
             add_action( 'add_meta_boxes', array( &$this, 'locationMetaField' ) );
