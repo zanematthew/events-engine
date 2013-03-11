@@ -100,7 +100,7 @@ $venues->meta_sections['social_media'] = array(
     'label' => __('Social Media','myplugin_textdomain'),
     'fields' => array(
         array(
-            'label' => 'Face Book',
+            'label' => 'Facebook',
             'type' => 'text'
         ),
         array(
