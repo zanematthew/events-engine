@@ -15,9 +15,9 @@ Powered by zM Easy CPT and enhanced by Blue Vanillia
 
 == Description ==
 
-[zM Events & Venues]()) is a WordPress plugin that allows anyone to creat an event, associate it with a venue, and allow users to create a schedule adding any event to their schedule on their self-hosted WordPress site.
+zM Events & Venues is a WordPress plugin that allows anyone to creat an event, associate it with a venue, and allow users to create a schedule adding any event to their schedule on their self-hosted WordPress site.
 
-[Learn more]() or track the progress of [zM Events & Venues on Github](https://github.com/zanematthew/zm-events-venues/).
+[Learn more] or track the progress of [zM Events & Venues on Github](https://github.com/zanematthew/zm-events-venues/).
 
 = Features =
 * Each Event is associated to one and only one Venue.

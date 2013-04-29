@@ -254,21 +254,24 @@ Class Venues extends zMCustomPostTypeBase {
 
     /**
      * You give me state, I give you abbreviation!
+     * You give me state abbr, I give you state!
      */
     public function stateByAbbreviation( $abbr=null ){
 
         if ( is_null( $abbr ) )
             die('need abbr');
 
-        $abbr = strtoupper( $abbr );
+        if ( strlen( $abbr ) == 2 ){
+            $abbr = strtoupper( $abbr );
 
-        if ( ! empty( $this->state_list[$abbr] ) ) {
-            $state_name = $this->state_list[$abbr];
+            if ( ! empty( $this->state_list[$abbr] ) ) {
+                $state = $this->state_list[$abbr];
+            }
         } else {
-            $state_name = "Unknown";
+            $state = array_search( $abbr, $this->state_list );
         }
 
-        return $state_name;
+        return $state;
     }
 
     /**
@@ -367,7 +370,13 @@ Class Venues extends zMCustomPostTypeBase {
      * @param $state_abbr (string/array)
      * @todo transient
      */
-    public function getVenueByState( $state_abbr=null ){
+    public function getVenueByState( $state=null ){
+
+        if ( ! is_array( $state ) && strlen( $state ) != 2 ){
+            $state_abbr = $this->stateByAbbreviation( $state );
+        } else {
+            $state_abbr = $state;
+        }
 
         $args = array(
             'post_type' => $this->cpt,
@@ -639,7 +648,8 @@ Class Venues extends zMCustomPostTypeBase {
             'current' => $current,
             'multiple' => true,
             'items' => $items,
-            'key' => $key
+            'key' => $key,
+            'label' => 'State'
             );
 
         zm_base_build_select( $args );
