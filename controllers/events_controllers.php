@@ -10,8 +10,7 @@
 class Events extends zMCustomPostTypeBase {
 
     private static $instance;
-    private $my_cpt;
-    public $my_path;
+    private $my_cpt = 'events';
 
     /**
      * Every thing that is "custom" to our CPT goes here.
@@ -29,13 +28,6 @@ class Events extends zMCustomPostTypeBase {
         add_action( 'admin_init', array( &$this, 'admin_init' ) );
     }
 
-
-    /**
-     * Assign the current directory into a variable
-     */
-    public function myPath(){
-        return $this->my_path = plugin_dir_path( __FILE__ );
-    }
 
     /**
      * Custom Post Submission, note we are overriding the default method
@@ -139,13 +131,6 @@ class Events extends zMCustomPostTypeBase {
             $this->updateStartEndDate( $post_id, $start_date, $end_date );
             $this->updateEntryFee( $post_id, $entry_fee );
 
-
-            // Associate this post with an attachment_id if we have one.
-            if ( isset( $_POST['attachment_id'] ) ) {
-                $this->updateAttachmentId( $post_id, $_POST['attachment_id'] );
-                unset( $_POST['attachment_id'] );
-            }
-
             $html .= '<div class="success-container">';
             $html .= '<div class="message">';
             $html .= '<p style="margin-bottom: 10px;">Saved!</p>';
@@ -226,7 +211,7 @@ class Events extends zMCustomPostTypeBase {
     /**
      * When the post is saved, call our custom action
      */
-    public function myplugin_save_postdata( $events_id ) {
+    public function save_postdata( $events_id ) {
 
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE || ! isset( $_POST['venues_id'] ) )
             return;
@@ -265,28 +250,20 @@ class Events extends zMCustomPostTypeBase {
     }
 
     /**
-     * @todo add track_id as postmeta for events
+     * @todo add venue_id as postmeta for events
      * @todo remove as much markup as possible?
      */
     public function getVenueLink( $post_id=null, $title=null, $anchor=null ){
 
-        $track_id = self::$instance->getVenueId( $post_id );
+        $venue_id = self::$instance->getVenueId( $post_id );
 
-        $post = get_post( $track_id );
+        $post = get_post( $venue_id );
 
-        if ( is_null( $title ) )
-            $title = $post->post_title;
-        else
-            $title = $title;
+        $title = is_null( $title ) ? $post->post_title : $title;
 
-        if ( is_null( $anchor ) )
-            $anchor = '';
-        else
-            $anchor = '#'.$anchor;
+        $anchor = is_null( $anchor ) ? '' : '#' . $anchor;
 
-        $html = '<a href="'.get_permalink( $track_id ).$anchor.'" title="View track info for: '.$post->post_title.' ">'.$title.'</a>';
-
-        return $html;
+        return '<a href="' . get_permalink( $venue_id ) . $anchor . '" title="View track info for: ' . $post->post_title . ' ">' . $title . '</a>';
     }
 
 
@@ -311,15 +288,7 @@ class Events extends zMCustomPostTypeBase {
         return $post->post_title;
     }
 
-    public function getTags( $event_id=null ){
 
-        if ( is_null( $event_id ) ) {
-            global $post;
-            $event_id = $post->ID;
-        }
-
-        return Helpers::getTaxTerm( array( 'post_id' => $event_id, 'taxonomy' => 'bmx_rs_tag' ) );
-    }
 
     public function getType( $event_id=null ){
         $type = wp_get_post_terms( $event_id, 'type', array("fields" => "names") );
@@ -340,15 +309,6 @@ class Events extends zMCustomPostTypeBase {
         $tmp[$this->my_cpt . '_start-date'] = update_post_meta( $post_id, $this->my_cpt . '_start-date', $start_date );
         $tmp[$this->my_cpt . '_end-date'] = update_post_meta( $post_id, $this->my_cpt . '_end-date', $end_date );
         return $tmp;
-    }
-
-    /**
-     * Update/associate the event with the attachment
-     * @todo all post meta keys come from one location
-     * @todo Class Attachment
-     */
-    public function updateAttachmentId( $post_id=null, $attachment_id=null ){
-        return update_post_meta( $post_id, '_zm_attachement_id', $attachment_id );
     }
 
     /**
@@ -488,7 +448,7 @@ class Events extends zMCustomPostTypeBase {
     public function admin_init(){
 
         add_action( 'add_meta_boxes', array( &$this, 'locationMetaField' ) );
-        add_action( 'save_post', array( &$this, 'myplugin_save_postdata' ) );
+        add_action( 'save_post', array( &$this, 'save_postdata' ) );
         add_action( 'wp_ajax_feedPreviewNew', array( &$this, 'feedPreviewNew' ) );
 
         add_filter( 'manage_edit-events_columns', array( &$this, 'customHeader' ) );

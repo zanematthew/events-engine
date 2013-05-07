@@ -243,15 +243,6 @@ Class Venues extends zMCustomPostTypeBase {
     }
 
 
-    public function getTags( $track_id=null ){
-
-        if ( is_null( $track_id ) ) {
-            global $post;
-            $track_id = $post->ID;
-        }
-
-        return Helpers::getTaxTerm( array( 'post_id' => $track_id, 'taxonomy' => 'tracks_tags' ) );
-    }
 
     /**
      * You give me state, I give you abbreviation!

@@ -12,7 +12,7 @@ $event->post_type = array(
     array(
         'name' => 'Event',
         'type' => 'events',
-        'has_one' => 'tracks', // add support 'has_many' => 'other_cpt'
+        'has_one' => 'venues', // add support 'has_many' => 'other_cpt'
         'menu_name' => 'Events',
         'rewrite' => array(
             'slug' => 'events'
