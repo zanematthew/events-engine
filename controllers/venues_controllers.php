@@ -166,7 +166,8 @@ Class Venues extends zMCustomPostTypeBase {
         foreach( $venues as $posts ) {
             $html .= '<option value="'.$posts->ID.'" '.selected($current_id, $posts->ID, false).'>' . $posts->post_title.'</optoin>';
         }
-        return '<select name="venues_id" class="chzn-select"  data-placeholder="Choose a Venue..." style="width: 700px;>'.$html.'</select>';
+        // return '<select name="venues_id" class="chzn-select"  data-placeholder="Choose a Venue..." style="width: 700px;">'.$html.'</select>';
+        return '<select name="venues_id" class="chzn-select"  data-placeholder="Choose a Venue...">'.$html.'</select>';
     }
 
     /**
