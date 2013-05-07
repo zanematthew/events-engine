@@ -23,13 +23,8 @@ class Events extends zMCustomPostTypeBase {
 
         $this->my_cpt = strtolower( __CLASS__ );
 
-
-        register_activation_hook( __FILE__, array( &$this, 'registerActivation') );
-
         add_action( 'wp_ajax_nopriv_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
         add_action( 'wp_ajax_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
-
-        add_action( 'before_delete_post', array( &$this, 'beforeDeletePost') );
 
         add_action( 'admin_init', array( &$this, 'admin_init' ) );
     }
@@ -273,7 +268,7 @@ class Events extends zMCustomPostTypeBase {
      * @todo add track_id as postmeta for events
      * @todo remove as much markup as possible?
      */
-    public function getTrackLink( $post_id=null, $title=null, $anchor=null ){
+    public function getVenueLink( $post_id=null, $title=null, $anchor=null ){
 
         $track_id = self::$instance->getVenueId( $post_id );
 
@@ -498,6 +493,8 @@ class Events extends zMCustomPostTypeBase {
 
         add_filter( 'manage_edit-events_columns', array( &$this, 'customHeader' ) );
         add_action( 'manage_events_posts_custom_column' , array( &$this, 'customContent' ), 10, 2 );
+
+        add_action( 'before_delete_post', array( &$this, 'beforeDeletePost') );
 
         wp_register_script( 'zm-ev-date-time-script', dirname( plugin_dir_url( __FILE__ ) ) . '/vendor/jquery-timepicker/jquery-ui-timepicker-addon.js'  );
 

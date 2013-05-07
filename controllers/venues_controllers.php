@@ -670,3 +670,28 @@ Class Venues extends zMCustomPostTypeBase {
     }
 
 }
+
+function zm_ev_get_tax_term( $tax=array() ){
+
+    if ( ! is_array( $tax ) || is_null( $tax ) )
+        die('need tax and make it array');
+
+    extract( $tax );
+
+    // simple error checking
+    if ( empty( $post_id ) || empty( $taxonomy ) ) {
+        return;
+    }
+
+    $data = array();
+    $terms = get_the_terms( $post_id, $taxonomy );
+
+    if ( $terms && is_array( $terms ) ) {
+        foreach( $terms as $term ){
+            $data[] = $term->name;
+        }
+        return implode( ' ', $data );
+    } else {
+        return '';
+    }
+}

@@ -11,8 +11,6 @@
  */
 
 
-require_once 'template-tags.php';
-
 /**
  * Auto load our events.php, events_controller.php, etc.
  * and enqueue our admin and front end asset files.
