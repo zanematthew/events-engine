@@ -75,9 +75,6 @@ Class Venues extends zMCustomPostTypeBase {
 
     public function __construct(){
 
-        // late static binding
-        // allows use to use self::$instance->cpt when invoked
-        // like Venues::someMethod();
         self::$instance = $this;
         $this->cpt = strtolower( __CLASS__ );
         parent::__construct();
@@ -135,10 +132,7 @@ Class Venues extends zMCustomPostTypeBase {
 
     public function scheduleCount( $venues_id=null ){
         $count = Venues::getSchedule( $venues_id );
-        if ( $count )
-            $html = $count->post_count;
-        else
-            $html = 0;
+        $html = $count ? $count->post_count : 0;
         print '<span class="count">' . $html . '</span>';
     }
 
@@ -222,11 +216,11 @@ Class Venues extends zMCustomPostTypeBase {
 
         global $wpdb;
 
-        $sql = "SELECT count( distinct(`meta_value`) ) AS count FROM `{$wpdb->prefix}postmeta` WHERE `meta_key` LIKE '%venues_state%'";
-        $count = $wpdb->get_results( $sql );
+        $count = $wpdb->get_results( "SELECT count( distinct(`meta_value`) ) AS count FROM `{$wpdb->prefix}postmeta` WHERE `meta_key` LIKE '%venues_state%'" );
 
         return $count[0]->count ;
     }
+
 
     /**
      * Return the number of citys in the db
@@ -236,8 +230,7 @@ Class Venues extends zMCustomPostTypeBase {
     public function cityCount() {
         global $wpdb;
 
-        $sql = "SELECT count( distinct(`meta_value`) ) AS count FROM `{$wpdb->prefix}postmeta` WHERE `meta_key` LIKE '%venues_city%'";
-        $count = $wpdb->get_results( $sql );
+        $count = $wpdb->get_results( "SELECT count( distinct(`meta_value`) ) AS count FROM `{$wpdb->prefix}postmeta` WHERE `meta_key` LIKE '%venues_city%'" );
 
         return $count[0]->count ;
     }
@@ -522,86 +515,6 @@ Class Venues extends zMCustomPostTypeBase {
         return filter_var( get_post_meta( $id, "venues_email", true ), FILTER_VALIDATE_EMAIL );
     }
 
-    /**
-     * Retrive ALL Tracks and order by Track Title ASC
-     */
-    static public function venues( $preview=true ){
-
-        $post_type = 'venues';
-
-        $args = array(
-            'posts_per_page' => -1,
-            'post_type' => $post_type,
-            'post_status' => 'publish',
-            'order' => 'ASC',
-            'orderby' => 'title'
-            );
-
-        $query = new WP_Query( $args );
-        $tracks_obj = new Venues;
-        $tracks = array();
-
-        foreach( $query->posts as $post ) {
-            $this_event = array();
-
-            $this_event['ID'] = $post->ID;
-            $this_event['t'] = $post->post_title;
-            $this_event['u'] = '/'.$post_type.'/'.$post->post_name . '/';
-
-            $tmp_city = get_post_meta( $post->ID, $post_type . '_city', true );
-            $tmp_state = get_post_meta( $post->ID, $post_type . '_state', true );
-            $tmp_lat = get_post_meta( $post->ID, 'lat', true );
-            $tmp_long = get_post_meta( $post->ID, 'long', true );
-            $tmp_street = get_post_meta( $post->ID, $post_type . '_street', true );
-            $tmp_region = $tracks_obj->getAttribute( array( 'venue_id' => $post->ID ) );
-            $tmp_tags = $tracks_obj->getTags( $post->ID );
-            $tmp_schedule = $tracks_obj->getSchedule( $post->ID );
-            $tmp_website = get_post_meta( $post->ID, $post_type . '_website', true );
-
-            if ( $tmp_city )
-                $this_event['c'] = $tmp_city;
-
-            if ( $tmp_state )
-                $this_event['s'] = $tmp_state;
-
-            if ( $tmp_lat )
-                $this_event['l'] = $tmp_lat;
-
-            if ( $tmp_long )
-                $this_event['lo'] = $tmp_long;
-
-            if ( $tmp_street )
-                $this_event['st'] = $tmp_street;
-
-            if ( $tmp_website )
-                $this_event['w'] = $tmp_website;
-
-            if ( $tmp_region )
-                $this_event['r'] = $tmp_region;
-
-            if ( $tmp_tags )
-                $this_event['ta'] = $tmp_tags;
-
-            if ( $tmp_schedule )
-                $event_count = $tmp_schedule->post_count;
-
-            $this_event['ec'] = $event_count;
-            $this_event['s_u'] = $tracks_obj->getMapImage( $post->ID, 'small', $uri=true );
-            $this_event['m_u'] = $tracks_obj->getMapImage( $post->ID, 'medium', $uri=true );
-
-            $tracks[] = $this_event;
-        }
-
-        if ( $preview ) {
-            print '<pre>';
-            print_r( $tracks );
-            print '</pre>';
-        } else {
-            $file = file_put_contents( TMP_RACES_DIR . 'venues.json', json_encode( $tracks ) );
-            if ( $file )
-                print "File created, size: {$file}\n";
-        }
-    }
 
     /**
      * Prints out an select box of states.
