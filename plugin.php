@@ -11,7 +11,6 @@
  */
 
 
-require_once 'my-admin-functions.php';
 require_once 'template-tags.php';
 
 /**

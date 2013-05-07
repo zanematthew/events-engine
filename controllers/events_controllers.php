@@ -23,14 +23,6 @@ class Events extends zMCustomPostTypeBase {
 
         $this->my_cpt = strtolower( __CLASS__ );
 
-        if ( is_admin() ){
-            add_action( 'add_meta_boxes', array( &$this, 'locationMetaField' ) );
-            add_action( 'save_post', array( &$this, 'myplugin_save_postdata' ) );
-            add_action( 'wp_ajax_feedPreviewNew', array( &$this, 'feedPreviewNew' ) );
-
-            add_filter( 'manage_edit-events_columns', array( &$this, 'customHeader' ) );
-            add_action( 'manage_events_posts_custom_column' , array( &$this, 'customContent' ), 10, 2 );
-        }
 
         register_activation_hook( __FILE__, array( &$this, 'registerActivation') );
 
@@ -38,6 +30,8 @@ class Events extends zMCustomPostTypeBase {
         add_action( 'wp_ajax_postTypeSubmit', array( &$this, 'postTypeSubmit' ) );
 
         add_action( 'before_delete_post', array( &$this, 'beforeDeletePost') );
+
+        add_action( 'admin_init', array( &$this, 'admin_init' ) );
     }
 
 
@@ -561,4 +555,24 @@ class Events extends zMCustomPostTypeBase {
     }
 
 
+    public function admin_init(){
+
+        add_action( 'add_meta_boxes', array( &$this, 'locationMetaField' ) );
+        add_action( 'save_post', array( &$this, 'myplugin_save_postdata' ) );
+        add_action( 'wp_ajax_feedPreviewNew', array( &$this, 'feedPreviewNew' ) );
+
+        add_filter( 'manage_edit-events_columns', array( &$this, 'customHeader' ) );
+        add_action( 'manage_events_posts_custom_column' , array( &$this, 'customContent' ), 10, 2 );
+
+        wp_register_script( 'zm-ev-date-time-script', dirname( plugin_dir_url( __FILE__ ) ) . '/vendor/jquery-timepicker/jquery-ui-timepicker-addon.js'  );
+
+        $this->dependencies_js = array(
+            'jquery-ui-datepicker',
+            'jquery-ui-slider',
+            'zm-ev-date-time-script'
+            );
+
+        $this->dependencies_css = array();
+
+    }
 } // End 'CustomPostType'
