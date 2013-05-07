@@ -10,7 +10,7 @@
 class Events extends zMCustomPostTypeBase {
 
     private static $instance;
-    private $my_cpt = 'events';
+    private $my_cpt;
 
     /**
      * Every thing that is "custom" to our CPT goes here.

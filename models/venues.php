@@ -1,10 +1,18 @@
 <?php
 
+/**
+ * This file is used to create our post type, custom taxonomies, assign our
+ * assets url and assign "basic" meta fields.
+ *
+ * This file MUST be named the same name as the CONTROLLER!
+ * It is used to create our Events post type.
+ */
+
+
+/**
+ * Build custom post type
+ */
 $venues = new Venues();
-
-$venues->models[] = 'venues';
-$venues->asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
-
 $venues->post_type = array(
     array(
         'name' => 'Venue',
@@ -26,6 +34,16 @@ $venues->post_type = array(
     )
 );
 
+
+/**
+ * Assign assets url
+ */
+$venues->asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
+
+
+/**
+ * Build custom taxonomies
+ */
 $venues->taxonomy = array(
     array(
          'name' => 'region',
@@ -39,6 +57,10 @@ $venues->taxonomy = array(
          )
     );
 
+
+/**
+ * Contact meta section
+ */
 $venues->meta_sections['contact'] = array(
     'name' => 'contact',
     'label' => __('Contact','myplugin_textdomain'),
@@ -59,6 +81,9 @@ $venues->meta_sections['contact'] = array(
 );
 
 
+/**
+ * Address meta section
+ */
 $venues->meta_sections['address'] = array(
     'name' => 'address',
     'label' => __('Address'),
@@ -95,6 +120,11 @@ $venues->meta_sections['address'] = array(
     )
 );
 
+
+
+/**
+ * Social Media meta section
+ */
 $venues->meta_sections['social_media'] = array(
     'name' => 'social_media',
     'label' => __('Social Media','myplugin_textdomain'),
@@ -110,6 +140,10 @@ $venues->meta_sections['social_media'] = array(
     )
 );
 
+
+/**
+ * Schedule meta section
+ */
 $venues->meta_sections['schedule'] = array(
     'name' => 'schedule',
     'label' => __('Schedule','myplugin_textdomain'),
@@ -127,16 +161,14 @@ function tmp_make_schedule(){
     if ( empty( $_GET['post'] ) ) return;
 
     $tmp_schedule = Venues::getSchedule( $_GET['post'] );
-
-    if ( ! is_object( $tmp_schedule ) || $tmp_schedule->post_count == 0 )
-        return __("This Venue has no Events.", "zm_ev" );
-
     $html = null;
-    foreach ( $tmp_schedule->posts as $schedule ) {
-        $html .= '<p>';
-        $html .= '<a href="' . admin_url('post.php?post=' . $schedule->ID . '&action=edit') . '">Edit</a> &nbsp;&nbsp;';
-        $html .= $schedule->post_title;
-        $html .= '</p>';
+
+    if ( ! is_object( $tmp_schedule ) || $tmp_schedule->post_count == 0 ){
+        $html = __("This Venue has no Events.", "zm_ev" );
+    } else {
+        foreach ( $tmp_schedule->posts as $schedule ) {
+            $html .= '<p><a href="' . admin_url('post.php?post=' . $schedule->ID . '&action=edit') . '">Edit</a> &nbsp;&nbsp;' . $schedule->post_title . '</p>';
+        }
     }
 
     return $html;

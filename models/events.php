@@ -1,18 +1,22 @@
 <?php
+
 /**
- * Define parameters for our Custom Post Type.
+ * This file is used to create our post type, custom taxonomies, assign our
+ * assets url and assign "basic" meta fields.
  *
+ * This file MUST be named the same name as the CONTROLLER!
+ * It is used to create our Events post type.
  */
 
+
+/**
+ * Build custom post type
+ */
 $event = new Events();
-
-$event->asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
-
 $event->post_type = array(
     array(
         'name' => 'Event',
         'type' => 'events',
-        'has_one' => 'venues', // add support 'has_many' => 'other_cpt'
         'menu_name' => 'Events',
         'rewrite' => array(
             'slug' => 'events'
@@ -31,6 +35,16 @@ $event->post_type = array(
     )
 );
 
+
+/**
+ * Assign assets url
+ */
+$event->asset_url = plugin_dir_url( dirname( __FILE__ ) ) . 'assets/';
+
+
+/**
+ * Build custom taxonomies
+ */
 $event->taxonomy = array(
      array(
          'name' => 'type',
@@ -50,6 +64,10 @@ $event->taxonomy = array(
         )
 );
 
+
+/**
+ * Date meta section
+ */
 $event->meta_sections['date'] = array(
     'name' => 'date',
     'label' => __('Event Date'),
@@ -69,6 +87,10 @@ $event->meta_sections['date'] = array(
     )
 );
 
+
+/**
+ * Fee meta section
+ */
 $event->meta_sections['fee'] = array(
     'name' => 'fee',
     'label' => __('Event Fee'),
