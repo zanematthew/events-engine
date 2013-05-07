@@ -276,10 +276,12 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
         zm_ev_user_venue_pref( $zm_venues_id_preference );
         zm_ev_user_type_pref( $zm_type_ids_preference );
 
-    } elseif ( $zm_state_preference && $zm_type_ids_preference && $cpt == 'events' ){
-        /**
-         * If we have a state pref. and type pref. and post is Events
-         */
+    }
+
+    /**
+     * If we have a state pref. and type pref. and post is Events
+     */
+    elseif ( $zm_state_preference && $zm_type_ids_preference && $cpt == 'events' ){
         $tmp_venues_ids = $venues->getVenueIdByState( $zm_state_preference );
 
         $args['post_type'] = 'events';
@@ -335,11 +337,13 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
             return false;
         }
 
-    } elseif ( $zm_state_preference && $cpt == 'venues' ){
-        /**
-         * If we have no state pref. and our post type is Venues
-         * Select Venues by user state pref.
-         */
+    }
+
+    /**
+     * If we have no state pref. and our post type is Venues
+     * Select Venues by user state pref.
+     */
+    elseif ( $zm_state_preference && $cpt == 'venues' ){
         $args['post_type'] = $cpt;
         $args['meta_query'] = array(
             array(
@@ -381,13 +385,24 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
         $args['meta_key'] = 'events_start-date';
         $args['order'] = 'ASC';
 
-    } else {
-        /**
-         * If we have no state or venue preference just return a query of
-         * either Events or Venues.
-         */
-        return get_posts(
-            array(
+    }
+
+    /**
+     * If this is a venue call
+     */
+    elseif ( $cpt == 'venues' ){
+        $args = array(
+                'post_type' => array( $cpt ),
+                'post_status' => 'publish',
+                'order' => 'ASC'
+                );
+    }
+
+    /**
+     * Default
+     */
+    else {
+        $args = array(
                 'post_type' => array( $cpt ),
                 'post_status' => 'publish',
                 'meta_query' => array(
@@ -400,8 +415,7 @@ function zm_ev_venues_by_user_pref_args( $cpt=null ){
                 'meta_key' => 'events_start-date',
                 'orderby' => 'meta_value',
                 'order' => 'ASC'
-                )
-            );
+                );
     }
 
     $my_query = New WP_Query( $args );

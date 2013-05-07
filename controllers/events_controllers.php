@@ -40,70 +40,6 @@ class Events extends zMCustomPostTypeBase {
         add_action( 'before_delete_post', array( &$this, 'beforeDeletePost') );
     }
 
-    /**
-     * Activation Method -- Insert a sample BMX Race Schedule, a few terms
-     * with descriptions and assign our sample Race Schedule to some terms.
-     *
-     * Note: This is completly optional BUT must be present! i.e.
-     * public function registerActivation() {} is completly valid
-     *
-     * BEFORE! taxonomies are regsitered! therefore
-     * these terms and taxonomies are NOT derived from our object!
-     * Set to we know its been installed at least once before
-     *
-     * @uses get_option()
-     * @uses get_current_user_id()
-     * @uses wp_insert_term()
-     * @uses wp_insert_post()
-     * @uses term_exists()
-     * @uses wp_set_post_terms()
-     * @uses update_option()
-     */
-    public function registerActivation() {
-
-        $installed = get_option( 'zm_brs_number_installed' );
-
-        if ( $installed == '1' ) {
-            return;
-        }
-
-        $this->registerTaxonomy( $_zm_taxonomies );
-
-        $author_ID = get_current_user_id();
-
-        $inserted_term = wp_insert_term( 'Triple Point',   'point-scale', array( 'description' => 'Normally a higher rider count and more higher races fees.', 'slug' => 'triple-point') );
-        $inserted_term = wp_insert_term( 'Double Point',   'point-scale', array( 'description' => 'Larger turn out then a local race.', 'slug' => 'double-point') );
-        $inserted_term = wp_insert_term( 'Single Point',   'point-scale', array( 'description' => 'A normal BMX race.', 'slug' => 'single-point') );
-        $inserted_term = wp_insert_term( 'Chesapeake BMX', 'track',       array( 'description' => 'Marylands BMX track', 'slug' => 'chesapeake-bmx') );
-        $inserted_term = wp_insert_term( 'Severn',         'city',        array( 'description' => 'my city', 'slug' => 'severn') );
-        $inserted_term = wp_insert_term( 'Maryland',       'state',       array( 'description' => 'my state', 'slug' => 'maryland') );
-
-        $post = array(
-            'post_title'   => 'Maryland State Championship',
-            'post_excerpt' => 'Come out and checkout out State Championship race!',
-            'post_author'  => $author_ID,
-            'post_type'    => $this->my_cpt,
-            'post_status'  => 'publish'
-        );
-
-        $post_id = wp_insert_post( $post, true );
-
-        if ( isset( $post_id ) ) {
-            $term_id = term_exists( 'Double Point', 'point-scale' );
-            wp_set_post_terms( $post_id, $term_id, 'point-scale' );
-
-            $term_id = term_exists( 'Chesapeake BMX', 'track' );
-            wp_set_post_terms( $post_id, $term_id, 'track' );
-
-            $term_id = term_exists( 'Maryland', 'state' );
-            wp_set_post_terms( $post_id, $term_id, 'state' );
-
-            $term_id = term_exists( 'Severn', 'city' );
-            wp_set_post_terms( $post_id, $term_id, 'city' );
-
-            update_option( 'zm_brs_number_installed', '1' );
-        }
-    } // End 'registerActivation'
 
     /**
      * Assign the current directory into a variable
@@ -319,9 +255,11 @@ class Events extends zMCustomPostTypeBase {
 
         $current_venues_id = get_post_meta( $events_id, 'venues_id', true );
 
-        $this->updateVenue( $events_id, $_POST['venues_id'] );
-        $venues = New Venues;
-        $venues->updateSchedule( $_POST['venues_id'], $events_id, $current_venues_id );
+        if ( (int)$_POST['venues_id'] ){
+            $this->updateVenue( $events_id, $_POST['venues_id'] );
+            $venues = New Venues;
+            $venues->updateSchedule( $_POST['venues_id'], $events_id, $current_venues_id );
+        }
     }
 
     public function locationMetaField(){
@@ -513,7 +451,7 @@ class Events extends zMCustomPostTypeBase {
     public function getMonth( $start_date=null, $end_date=null, $type=null, $limit=5 ){
 
         if ( is_null( $start_date ) ){
-            $date = date('Y-n');
+            $date = date('Y-m');
         } else {
             // $date = date( 'Y-n', strtotime( $start_date ) );
             $date = $start_date;
@@ -565,6 +503,7 @@ class Events extends zMCustomPostTypeBase {
         $tmp['date']  = $date;
         $tmp['items'] = $events->posts;
         $tmp['count'] = $events->post_count;
+
         return $tmp;
     }
 
