@@ -28,30 +28,3 @@ function zm_ev_admin_scripts( $hook ){
     }
 }
 add_action( 'admin_enqueue_scripts', 'zm_ev_admin_scripts' );
-
-
-/**
- * Hook to display the Admin Menu
- */
-function zm_ev_settings_menu(){
-    add_submenu_page( 'options-general.php', 'evs', 'EV:Settings', 'activate_plugins', 'events-venues-settings', 'zm_ev_settings_page' );
-}
-add_action('admin_menu','zm_ev_settings_menu');
-
-/**
- * Print out the settings page/css/js
- */
-function zm_ev_settings_page(){?>
-    <div class="zm-ev-settings-container">
-        <h1><?php _e('Events &amp; Venues Settings', 'zm_ev'); ?></h1>
-        <form action="#" method="POST" id="zm_ev_settings_form">
-        <fieldset>
-            <legend>General Settings</legend>
-            <label>Google Analytics</label>
-            <input type="text" name="zm_ev_google_anaylitcs_code" value="<?php print get_option('zm_ev_google_anaylitcs_code'); ?>" />
-        </fieldset>
-        <?php do_action('zm_ev_before_settings'); ?>
-        <?php do_action('zm_ev_after_settings'); ?>
-        </form>
-    </div>
-<?php }

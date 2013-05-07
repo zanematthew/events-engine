@@ -1,161 +1,174 @@
 <?php
 
-// Functions to be used in themes files
+/**
+ * Set our global white list of keys
+ */
+global $zm_user_settings;
+$zm_user_settings = array(
+    'default_location',
+    'state',
+    'type',
+    'venues',
+    'user_email'
+    );
 
-function zm_ev_settings(){
-    if ( ! is_user_logged_in() ) return;
-    global $current_user;
-    ?><a href="<?php print site_url(); ?>/attendees/<?php print $current_user->user_login; ?>/settings/" class="zm-ev-settings-icon">Settings</a>
-<?php }
+/**
+ * This file handles redirecting of our templates to our given views
+ * dir and anything else.
+ *
+ * Check if the themer has made a theme file in their
+ * theme dir, if not load our default.
+ *
+ * @uses template_redirect http://codex.wordpress.org/Plugin_API/Action_Reference/template_redirect
+ */
+function zm_ev_tempalte_redirect() {
 
+    $pagename =  get_query_var( 'pagename' );
 
-function zm_ev_ga_code(){
-
-    $localhosts = array(
-        '127.0.0.1',
-        'localhost'
+    $theme_dir = get_stylesheet_directory() . DIRECTORY_SEPARATOR;
+    $theme_files = array(
+        'settings' => $theme_dir . 'custom/settings.php'
         );
 
-    if ( in_array( $_SERVER['REMOTE_ADDR'], $localhosts ) ) {
-        print '<!-- zM Google Analytics disabled for localhost: ' . $_SERVER['REMOTE_ADDR'] . '-->';
-    } else {
-        $zm_ev_google_anaylitcs_code = get_option('zm_ev_google_anaylitcs_code'); ?>
-        <script type="text/javascript">
-          var _gaq = _gaq || [];
-          _gaq.push(['_setAccount', '<?print $zm_ev_google_anaylitcs_code; ?>']);
-          _gaq.push(['_trackPageview']);
-
-          (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-          })();
-        </script>
-    <?php }
+    if ( $pagename == 'settings' ){
+        header("HTTP/ 200 OK");
+        load_template( $theme_files['settings']  );
+        die();
+    }
 }
-add_action( 'wp_footer', 'zm_ev_ga_code' );
+add_action('template_redirect', 'zm_ev_tempalte_redirect', 6);
 
-function zm_ev_venue_links_pane( $post_id=null ){
+function zm_ev_init(){
+    $dependencies[] = 'jquery';
 
-    global $post_type;
+    wp_register_script( 'zm-chosen-script', plugin_dir_url( __FILE__ ) . 'vendor/chosen/chosen.jquery.min.js', $dependencies );
+    wp_register_style( 'zm-chosen-style', plugin_dir_url( __FILE__ ) . 'vendor/chosen/chosen.css' );
 
-    if ( $post_type == 'events' ){
-        $venue_id = Events::getVenueId( $post_id );
+    add_action( 'wp_print_scripts', 'zm_ev_js_var_setup' );
+}
+add_action('init','zm_ev_init');
+
+function zm_ev_js_var_setup(){
+    global $current_user;
+    global $zm_user_settings;
+    get_currentuserinfo();
+
+    if ( get_user_meta( $current_user->ID, 'fb_id', true ) ){
+        $uid = get_user_meta( $current_user->ID, 'fb_id', true );
     } else {
-        $venue_id = $post_id;
+        $uid = $current_user->ID;
     }
 
-    if ( get_option('zm_geo_location_version' ) ){
-        $location = zm_geo_location_get();
-        $directions = '<a href="https://maps.google.com/maps?saddr='.$location['city'].','.$location['region_full'].'&daddr='.Venues::getAttribute( array( 'key' => 'LatLong' ) ).'"target="_blank">Directions</a>';
-    } else {
-        $directions = null;
+    $tmp = array();
+    foreach( $zm_user_settings as $k ){
+        $value = get_user_meta( $current_user->ID, $k, true );
+        if ( ! empty( $value ) ) $tmp[$k] = $value;
+    }
+    $settings = json_encode( $tmp );
+
+    ?><script type="text/javascript">
+
+    var _site_url   = "<?php print site_url(); ?>";
+    var _vendor_url = "<?php print site_url(); ?>/wp-content/plugins/zm-events-venues/vendor";
+
+    if ( typeof _user !== "object") {
+        var _user = {};
+        _user.profile = {};
+    }
+    _user.profile = {
+        user_login: "<?php print $current_user->user_login; ?>",
+        uid:        <?php print $uid; ?>
+    };
+    _user.settings = <?php print $settings; ?>;
+    </script>
+<?php }
+
+function zm_ev_get_tax_term( $tax=array() ){
+
+    if ( ! is_array( $tax ) || is_null( $tax ) )
+        die('need tax and make it array');
+
+    extract( $tax );
+
+    // simple error checking
+    if ( empty( $post_id ) || empty( $taxonomy ) ) {
+        return;
     }
 
-    ?>
-    <div class="venue-links-pane">
-        <ul>
-            <li class="website"><a href="<?php print Venues::getAttribute( array( 'key' => 'website' ) ); ?>" target="_blank">Website</a></li>
-            <li class="directions"><?php print $directions; ?></li>
-            <li class="venue"><?php print Events::getTrackLink( $post_id, 'Venue' ); ?>
-            <span class="count">
-                <?php if ( Venues::getSchedule( $venue_id ) ) {
-                    print Venues::getSchedule( $venue_id )->post_count;
-                } else {
-                    print 0;
-                }
-                ?>
-            </span>
-            </li>
-        </ul>
-</div><?php }
+    $data = array();
+    $terms = get_the_terms( $post_id, $taxonomy );
+
+    if ( $terms && is_array( $terms ) ) {
+        foreach( $terms as $term ){
+            $data[] = $term->name;
+        }
+        return implode( ' ', $data );
+    } else {
+        return '';
+    }
+}
 
 /**
- * @package This function makes use of the 'zm_geo_location' plugin
- * to return the users current location for directions.
- * @subpackage Makes use of the zM Geo Location to derive the directions
- * link.
+ * Save the settings, note this is called via ajax!
+ * @todo check ajax refer
  */
-function zm_ev_venue_address_pane( $post_id=null ){
+function zm_ev_save_user_settings(){
 
-    global $post_type;
-    $venues = New Venues;
+    global $current_user;
+    get_currentuserinfo();
 
-    if ( $post_type == 'events' ){
-        $venue_id = Events::getVenueId( $post_id );
-    } else {
-        $venue_id = $post_id;
+    global $zm_user_settings;
+
+    /**
+     * Action is being sent with the ajax requst, so we unset it.
+     */
+    unset( $_POST['action'] );
+
+    foreach( $zm_user_settings as $key ){
+
+        /**
+         * If any value is not in our white list we
+         * unset (remove it) from our $_POST variable
+         */
+
+        /**
+         * Since I'm not a fan of storing empty key/values in the db,
+         * we remove the key if its empty.
+         */
+        if ( ! isset( $_POST[ $key ] )  ) {
+            delete_user_meta( $current_user->ID, $key );
+            unset( $_POST[ $key ] );
+        }
+
+        /**
+         * A special case for email updates
+         */
+        elseif ( $key == 'user_email' ){
+            wp_update_user( array( 'ID' => $current_user->ID, $key => $_POST[ $key ] ) );
+        }
+
+        /**
+         * Finally, our default, update the user meta with the
+         * user ID, key and value.
+         */
+        else {
+            update_user_meta( $current_user->ID, $key, $_POST[ $key ] );
+        }
     }
 
-    if ( get_option('zm_geo_location_version' ) ){
-        $location = zm_geo_location_get();
+    /**
+     * We send the new settings back to the ajax request as json encoded data.
+     */
+    print json_encode( $_POST );
 
-        $street = $venues->getAttribute( array( 'key' => 'street' ) );
-        $city = $venues->getAttribute( array( 'key' => 'city' ) );
-        $state = $venues->getAttribute( array( 'key' => 'state' ) );
-        $zip = $venues->getAttribute( array( 'key' => 'zip' ) );
-
-        $destination = "{$street} {$city}, {$state} {$zip}";
-
-        $directions = '<a href="https://maps.google.com/maps?saddr='.$location['city'].','.$location['region_full'].'&daddr='.$destination.'"target="_blank">Directions</a>';
-    } else {
-        $directions = null;
-    }
-
-    ?>
-    <div class="venues-address-pane">
-    <div class="content">
-        <h3><?php print $venues->getAttribute( array( 'key' => 'title', 'venue_id' => $venue_id, 'echo' => true ) ); ?></h3>
-        <?php $venues->getAttribute( array( 'key' => 'street', 'echo' => true ) ); ?>
-        <br /><?php $venues->getAttribute( array( 'key' => 'city', 'echo' => true ) ); ?>,
-        <?php $venues->getAttribute( array( 'key' => 'state', 'echo' => true ) ); ?>
-        <?php $venues->getAttribute( array( 'key' => 'zip', 'echo' => true ) ); ?>
-        <br />
-        <?php print $directions; ?>
-    </div>
-</div><?php }
-
-/**
- * Gets the custom date for an Event given the current $post->ID.
- *
- * Either returns the date from the $prefix_postmeta table
- * for a single event OR for Events that span multiple dates
- * will return start date and end date.
- *
- * @param $post_id
- * @param $both bool, display start and end date, or just start date
- * @uses get_post_custom_values();
- */
-function zm_event_date( $post_id=null, $both=true ){
-
-    if ( is_null( $post_id ) ) {
-        global $post;
-        $post_id = $post->ID;
-    }
-
-    $start = get_post_meta( $post_id, 'events_start-date', true );
-    $end = get_post_meta( $post_id, 'events_end-date', true );
-
-    if ( $end && $both ){
-        $date = date( 'M j', strtotime( $start ) ) . date( ' - M j, Y', strtotime( $end ) );
-    } else {
-        $date = date( 'M j, Y', strtotime( $start ) );
-    }
-
-    print $date;
+    /**
+     * Yes, ALL WordPress ajax request must die!
+     */
+    die();
 }
+add_action( 'wp_ajax_zm_ev_save_user_settings', 'zm_ev_save_user_settings' );
+add_action( 'wp_ajax_nopriv_zm_ev_save_user_settings', 'zm_ev_save_user_settings');
 
-function zm_user_setting_link( $text='Personalize' ){
-    if ( is_user_logged_in() ){
-        $current_user = wp_get_current_user();
-        $href = site_url() .'/attendees/' . $current_user->user_login . '/settings/';
-        $class = null;
-    } else {
-        $class = 'zm-login-handle';
-        $href = null;
-    }
-    return '<a href="'.$href.'" class="'.$class.'"> ' . $text . ' </a>';
-}
 
 function zm_ev_user_state_pref( $state_pref=null, $echo=true ){
 
