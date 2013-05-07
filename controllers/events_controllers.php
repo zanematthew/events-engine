@@ -102,9 +102,6 @@ class Events extends zMCustomPostTypeBase {
 
         $post_id = wp_insert_post( $post, true );
 
-        // eventDateSave
-        // do_action('date_save', $post_id);
-
         $title = $_POST['post_title'];
         $tracks_id = $_POST['venues_id'];
         $start_date = $_POST['events_start-date'];
@@ -201,18 +198,13 @@ class Events extends zMCustomPostTypeBase {
 
         $post_id = (int)$_POST['PostID'];
 
-        // $date = strtotime( $_POST['my_month'] . ' ' . $_POST['my_day'] . ' ' . $_POST['my_year'] . ' ' . $_POST['my_time']);
-        // $date = date( 'Y-m-d H:i:s', $date );
-
-        do_action('date_save', $_POST['PostID'] );
-
         $current_user = wp_get_current_user();
         $author = $current_user->ID;
 
         $post = array(
             'ID'            => $post_id,
             'post_author'   => wp_get_current_user()->ID,
-            'post_date' => date( 'Y-m-d H:i:s' ),
+            'post_date'     => date( 'Y-m-d H:i:s' ),
             'post_modified' => current_time('mysql')
         );
 
@@ -258,8 +250,8 @@ class Events extends zMCustomPostTypeBase {
 
     public function locationMetaField(){
         add_meta_box(
-            'tracks_address',
-            __( 'Venue', 'myplugin_textdomain' ),
+            'address',
+            'Venue',
             function(){
                 global $post;
                 $venues = New Venues;
@@ -302,16 +294,6 @@ class Events extends zMCustomPostTypeBase {
         return $html;
     }
 
-    /**
-     * Returns ONLY the URI for a Venue
-     */
-    public function getVenueURI( $post_id=null ){
-        $track_id = self::$instance->getVenueId( $post_id );
-
-        $post = get_post( $track_id );
-
-        return '/venues/'.basename( $post->guid );
-    }
 
     /**
      * Retrive the number of Events
@@ -382,52 +364,6 @@ class Events extends zMCustomPostTypeBase {
         return update_post_meta( $post_id, $this->my_cpt . '_fee', $entry_fee );
     }
 
-    /**
-     * Retreive the attachement Id used for an event
-     * @todo Class Attachment
-     */
-    public function getAttachmentId( $post_id=null ){
-        return get_post_meta( $post_id, '_zm_attachement_id', true );
-    }
-
-    /**
-     * @todo Class Attachment
-     * @todo add $meta_field support for arrays(arrays),
-     * i.e. getAttachmentMeta( 238, 'main' ), would return meta ['zm_sizes']['main']
-     */
-    public function getAttachmentMeta( $attachment_id=null, $meta_field=null ){
-        return maybe_unserialize( get_post_meta( $attachment_id, '_wp_attachment_metadata', true ) );
-    }
-
-    /**
-     * Return the full html img tag to an attachment based on
-     * attachment_id and size.
-     *
-     * @todo Class Attachment
-     * @todo remove uri stuff in place of the method getAttachmentImageURI
-     * @param $size See your db f*cker or hunt for it.
-     */
-    public function getAttachmentImage( $post_id=null, $size='thumb', $uri=false ){
-
-        // weird hack for something? post_id MUST be an (int)
-        if ( is_string( $post_id ) ){
-            global $post;
-            $size = $post_id;
-            $post_id = $post->ID;
-        }
-
-        $attachment_id = $this->getAttachmentId( $post_id );
-        $meta = $this->getAttachmentMeta( $attachment_id );
-
-        // @todo zm_sizes not hardcoded
-        if ( isset( $meta['zm_sizes'][ $size ] ) && $uri ){
-            return site_url() . '/wp-content/uploads'.$meta['zm_sizes'][ $size ];
-        } else {
-            if ( $meta['zm_sizes'][ $size ] )
-                return '<img src="/wp-content/uploads'.$meta['zm_sizes'][ $size ].'"/>';
-        }
-        return false;
-    }
 
     public function getDate( $event_id=null ){
 
@@ -447,7 +383,6 @@ class Events extends zMCustomPostTypeBase {
         if ( is_null( $start_date ) ){
             $date = date('Y-m');
         } else {
-            // $date = date( 'Y-n', strtotime( $start_date ) );
             $date = $start_date;
         }
 
